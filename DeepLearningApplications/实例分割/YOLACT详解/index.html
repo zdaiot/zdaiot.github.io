@@ -1,0 +1,143 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=2"><meta name="theme-color" content="#222"><meta name="generator" content="Hexo 3.9.0"><link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png"><link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png"><link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png"><link rel="mask-icon" href="/images/logo.svg" color="#222"><link rel="stylesheet" href="/css/main.css"><link rel="stylesheet" href="/lib/font-awesome/css/all.min.css"><script id="hexo-configurations">var NexT=window.NexT||{},CONFIG={hostname:"www.zdaiot.com",root:"/",scheme:"Gemini",version:"7.8.0",exturl:!1,sidebar:{position:"left",display:"post",offset:12,onmobile:!1},copycode:{enable:!0,show_result:!0,style:null},back2top:{enable:!0,sidebar:!0,scrollpercent:!0},bookmark:{enable:!1,color:"#222",save:"auto"},fancybox:!1,mediumzoom:!1,lazyload:!1,pangu:!1,comments:{style:"tabs",active:null,storage:!0,nav:null},algolia:{hits:{per_page:10},labels:{input_placeholder:"Search for Posts",hits_empty:"We didn't find any results for the search: ${query}",hits_stats:"${hits} results found in ${time} ms"}},localsearch:{enable:!0,trigger:"auto",top_n_per_article:1,unescape:!1,preload:!1},motion:{enable:!0,async:!1,transition:{post_block:"fadeIn",post_header:"slideDownIn",post_body:"slideDownIn",coll_header:"slideLeftIn",sidebar:"slideUpIn"}},path:"search.xml"}</script><meta name="description" content="主要贡献 在COCO数据集上的第一个实时实例分割模型 提出了比NMS算法更快的Fast NMS  网络结构YOLACT 的框架图如下："><meta name="keywords" content="实例分割,实时实例分割"><meta property="og:type" content="article"><meta property="og:title" content="YOLACT详解"><meta property="og:url" content="https://www.zdaiot.com/DeepLearningApplications/实例分割/YOLACT详解/index.html"><meta property="og:site_name" content="zdaiot"><meta property="og:description" content="主要贡献 在COCO数据集上的第一个实时实例分割模型 提出了比NMS算法更快的Fast NMS  网络结构YOLACT 的框架图如下："><meta property="og:locale" content="zh-CN"><meta property="og:image" content="https://www.zdaiot.com/DeepLearningApplications/实例分割/YOLACT详解/image-20200403141950957.png"><meta property="og:image" content="https://www.zdaiot.com/DeepLearningApplications/实例分割/YOLACT详解/v2-94d5266cf80bb8553610a1fd14b84302_720w.jpg"><meta property="og:image" content="https://www.zdaiot.com/DeepLearningApplications/实例分割/YOLACT详解/v2-669005e58c443af6d1254bd08a192641_720w.jpg"><meta property="og:image" content="https://www.zdaiot.com/DeepLearningApplications/实例分割/YOLACT详解/image-20200403144449496.png"><meta property="og:image" content="https://www.zdaiot.com/DeepLearningApplications/实例分割/YOLACT详解/image-20200403144911479.png"><meta property="og:updated_time" content="2020-04-04T08:16:08.000Z"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="YOLACT详解"><meta name="twitter:description" content="主要贡献 在COCO数据集上的第一个实时实例分割模型 提出了比NMS算法更快的Fast NMS  网络结构YOLACT 的框架图如下："><meta name="twitter:image" content="https://www.zdaiot.com/DeepLearningApplications/实例分割/YOLACT详解/image-20200403141950957.png"><link rel="canonical" href="https://www.zdaiot.com/DeepLearningApplications/实例分割/YOLACT详解/"><script id="page-configurations">CONFIG.page={sidebar:"",isHome:!1,isPost:!0,lang:"zh-CN"}</script><title>YOLACT详解 | zdaiot</title><script data-pjax>var _hmt=_hmt||[];!function(){var e=document.createElement("script");e.src="https://hm.baidu.com/hm.js?0b0b58037319da4959d5a3c014160ccd";var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t)}()</script><noscript><style>.sidebar-inner,.use-motion .brand,.use-motion .collection-header,.use-motion .comments,.use-motion .menu-item,.use-motion .pagination,.use-motion .post-block,.use-motion .post-body,.use-motion .post-header{opacity:initial}.use-motion .site-subtitle,.use-motion .site-title{opacity:initial;top:initial}.use-motion .logo-line-before i{left:initial}.use-motion .logo-line-after i{right:initial}</style></noscript></head><body itemscope itemtype="http://schema.org/WebPage"><div class="container use-motion"><div class="headband"></div><header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="header-inner"><div class="site-brand-container"><div class="site-nav-toggle"><div class="toggle" aria-label="切换导航栏"><span class="toggle-line toggle-line-first"></span><span class="toggle-line toggle-line-middle"></span><span class="toggle-line toggle-line-last"></span></div></div><div class="site-meta"><a href="/" class="brand" rel="start"><span class="logo-line-before"><i></i></span><h1 class="site-title">zdaiot</h1><span class="logo-line-after"><i></i></span></a><p class="site-subtitle" itemprop="description">404NotFound</p></div><div class="site-nav-right"><div class="toggle popup-trigger"><i class="fa fa-search fa-fw fa-lg"></i></div></div></div><nav class="site-nav"><ul id="menu" class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i> 首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i> 关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i> 标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i> 分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i> 归档</a></li><li class="menu-item menu-item-search"><a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i> 搜索</a></li></ul></nav><div class="search-pop-overlay"><div class="popup search-popup"><div class="search-header"><span class="search-icon"><i class="fa fa-search"></i></span><div class="search-input-container"> <input autocomplete="off" autocapitalize="off" placeholder="搜索..." spellcheck="false" type="search" class="search-input"></div><span class="popup-btn-close"><i class="fa fa-times-circle"></i></span></div><div id="search-result"><div id="no-result"><i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i></div></div></div></div></div></header><main class="main"><div class="main-inner"><div class="content-wrap"><div class="content post posts-expand"><article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN"><link itemprop="mainEntityOfPage" href="https://www.zdaiot.com/DeepLearningApplications/实例分割/YOLACT详解/"><span hidden itemprop="author" itemscope itemtype="http://schema.org/Person"><meta itemprop="image" content="/uploads/avatar.png"><meta itemprop="name" content="zdaiot"><meta itemprop="description" content="404NotFound"></span><span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization"><meta itemprop="name" content="zdaiot"></span><header class="post-header"><h1 class="post-title" itemprop="name headline"> YOLACT详解<a href="https://github.com/zdaiot/zdaiot.github.io/tree/hexo/source/_posts/DeepLearningApplications/实例分割/YOLACT详解.md" class="post-edit-link" title="编辑" rel="noopener" target="_blank"><i class="fa fa-pencil-alt"></i></a></h1><div class="post-meta"><span class="post-meta-item"><span class="post-meta-item-icon"><i class="far fa-calendar"></i></span> <span class="post-meta-item-text">发表于</span> <time title="创建时间：2020-04-04 16:16:08" itemprop="dateCreated datePublished" datetime="2020-04-04T16:16:08+08:00">2020-04-04</time></span><span class="post-meta-item"><span class="post-meta-item-icon"><i class="far fa-folder"></i></span> <span class="post-meta-item-text">分类于</span> <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/DeepLearningApplications/" itemprop="url" rel="index"><span itemprop="name">DeepLearningApplications</span></a></span> ， <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/DeepLearningApplications/实例分割/" itemprop="url" rel="index"><span itemprop="name">实例分割</span></a></span></span><span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display:none"><span class="post-meta-item-icon"><i class="eye"></i></span> <span class="post-meta-item-text">阅读次数：</span><span id="busuanzi_value_page_pv"></span></span><br><span class="post-meta-item" title="本文字数"><span class="post-meta-item-icon"><i class="far fa-file-word"></i></span> <span class="post-meta-item-text">本文字数：</span> <span>3k</span></span><span class="post-meta-item" title="阅读时长"><span class="post-meta-item-icon"><i class="far fa-clock"></i></span> <span class="post-meta-item-text">阅读时长 &asymp;</span> <span>3 分钟</span></span></div></header><div class="post-body" itemprop="articleBody"><h2 id="主要贡献"><a href="#主要贡献" class="headerlink" title="主要贡献"></a>主要贡献</h2><ul><li>在COCO数据集上的第一个实时实例分割模型</li><li>提出了比NMS算法更快的Fast NMS</li></ul><h2 id="网络结构"><a href="#网络结构" class="headerlink" title="网络结构"></a>网络结构</h2><p>YOLACT 的框架图如下：</p><p><img src="/DeepLearningApplications/实例分割/YOLACT详解/image-20200403141950957.png" alt="image-20200403141950957"></p><h3 id="预处理"><a href="#预处理" class="headerlink" title="预处理"></a>预处理</h3><p>对上面图中左下方绿色的原图进行预处理，步骤包括：<strong>将图片调整到合适的大小、转换 bbox 坐标和转换 mask 矩阵等</strong>。</p><h3 id="Backbone"><a href="#Backbone" class="headerlink" title="Backbone"></a>Backbone</h3><p>预处理后的图片输入进 backbone 网络，论文中使用了ResNet101，源代码中作者还实现了ResNet50 和 DarkNet53。为了下面描述方便，将ResNet 的网络结构放到下面：</p><p><img src="/DeepLearningApplications/实例分割/YOLACT详解/v2-94d5266cf80bb8553610a1fd14b84302_720w.jpg" alt="img"></p><p>可以看到，它的卷积模块有五个，分别是$\rm conv1,conv2_x,…,conv5_x$，<strong>这五个模块的输出分别对应上图的 C1 到 C5。</strong>与SSD相似，YOLACT也采用了多个尺度的特征图。这样做的好处是小的特征图卷积核感受视野比较大，且每一个单元格对应在原图中的尺寸比较大，所以可以设定<strong>比较大的特征图来用来检测相对较小的目标，而小的特征图负责检测大目标</strong>，如下图所示，8*8 的特征图相当于将原图分为 64 份，这样每个 anchor 比较小，而 4*4 的则相反：</p><p><img src="/DeepLearningApplications/实例分割/YOLACT详解/v2-669005e58c443af6d1254bd08a192641_720w.jpg" alt="img" style="zoom:80%"></p><h3 id="FPN"><a href="#FPN" class="headerlink" title="FPN"></a>FPN</h3><p>FPN全称为Feature pyramid Network。在上面的YOLACT框架图中，橙色的 P3-P7 是FPN网络。P5 是由 C5 经过一个卷积层得到的；接着对 P5 进行一次双线性插值将其放大，与经过卷积的 C4相加得到 P4；同样的方法得到 P3。此外，还对 P5 进行了卷积得到 P6，对 P6 进行卷积得到 P7。</p><p>论文中解释了使用 FPN 的原因：<strong>注意到更深层的特征图能生成更鲁棒的 mask，而更大的 prototype mask 能确保最终的 mask 质量更高且更好地检测到小物体。又想特征深，又想特征图大（本文中的P3​），那就得使用 FPN 了。</strong></p><p>接下来是并行的操作。P3 被送入 Protonet，P3-P7 也被同时送到 Prediction Head 中。</p><h3 id="Protonet"><a href="#Protonet" class="headerlink" title="Protonet"></a>Protonet</h3><p>受Mask R-CNN结构的启发，本文设计了Protonet结构，当输入图像尺寸是$550 \times 550$时，结构如下图所示。它的输入是P3（因为FPN结构，它的特征深，且特征图大），由多个$3\times 3$卷积层、上采样层和一个$1 \times 1$的卷积层组成，输出的mask维度为$138\times138\times32$，即32 个 prototype mask，每个大小是 $138\times 138$。</p><p><img src="/DeepLearningApplications/实例分割/YOLACT详解/image-20200403144449496.png" alt="image-20200403144449496" style="zoom:80%"></p><p>该结构与FCN的区别在于，没有针对prototypes的特定损失。相反的，这些prototypes的所有监督信息均来自集成后的mask损失。</p><p>最后，论文中提到，Protonet的输出无界特别重要，因为这可以使网络为它非常有信心的原型（例如明显的背景）产生大的、压倒性的激活。因此，这里使用了Relu激活函数。</p><h3 id="Prediction-Head"><a href="#Prediction-Head" class="headerlink" title="Prediction Head"></a>Prediction Head</h3><p>该分支的结构下面图中右半部分所示，这个分支的输入是 P3-P7 共五个特征图，<strong>Prediction Head 也有五个共享参数的预测层与之一一对应。</strong>和RetinaNet相比，这里的Head结构更浅，并添加了一个mask coefficient分支。图中$c$表示类别数；$a$表示每个特征图anchors的种类；$k$表示prototype的个数，对于不同的特征图，这里均等于32。下图中右半部分，首先是三个分支共享$3 \times 3$的卷积层，然后是每一个分支有各自的$3 \times 3$的卷积层。</p><p><img src="/DeepLearningApplications/实例分割/YOLACT详解/image-20200403144911479.png" alt="image-20200403144911479" style="zoom:50%"></p><p>输入的特征图先生成 anchor。每个像素点生成 3 个 anchor（$a=3$），比例是 1:1、1:2 和 2:1。五个特征图的 anchor 基本边长分别是 24、48、96、192 和 384。基本边长根据不同比例进行调整，确保 anchor 的面积相等（？）。</p><p>以P3为例，对该图进行解释，经过Head网络中前几个卷积层后，它的维度为 $W_3\times H_3\times 256$，那么它的anchor数就是$W_3\times H_3 \times 3$。接下来 Prediction Head 为其生成三类输出：</p><ul><li>全部类别置信度，COCO 中共有 81 类（包括背景，$c$=81），所以其维度为$W_3\times H_3 \times 3 \times 81$；</li><li>全部位置偏移，维度为$W_3\times H_3 \times 3 \times 4$；</li><li>全部 mask coefficient，维度为$W_3\times H_3 \times 3 \times 32$</li></ul><p>也就是，经典的anchor-based的目标检测器为每一个anchor产生$4+c$个系数，而本文产生$4+c+k$个系数。原文中还提到下面这段话，我目前理解还不是很深，所以先放在这里：然后对于非线性，我们发现能够从最终mask中减去prototype很重要。 因此，我们将 tanh （取值范围为-1到1）应用于k个mask coefficient，从而在没有非线性的情况下产生更稳定的输出。 这种设计选择的相关性在上面整体框架图中显而易见，因为在不允许减去的情况下，两种mask都无法构建。</p><h3 id="Mask-Assembly"><a href="#Mask-Assembly" class="headerlink" title="Mask Assembly"></a>Mask Assembly</h3><p>为了产生instance mask，我们将mask coefficient作为系数，将prototype分支的结果进行<strong>线性组合</strong>。将线性组合后结果经过sigmoid函数产生最后的masks。这些操作能够通过矩阵相乘和sigmoid函数得到：</p><script type="math/tex;mode=display">
+M = \sigma (PC^T)</script><p>其中，$P$是prototype masks，维度为$h \times w \times k$；$c$是mask coefficients，维度为$n \times k$，$n$为经过NMS和得分阈值后的instance数量。当然，也可以使用更复杂的步骤，这里为了简单和快，只使用了线性组合。最终得到的$M$尺寸为$h \times w \times n$，也就是<strong>预测出的$n$个mask。</strong></p><h3 id="损失函数"><a href="#损失函数" class="headerlink" title="损失函数"></a>损失函数</h3><p>这里使用三种损失训练模型：</p><ol><li>类别置信度损失 $L_{cls}$，计算方式SSD中相同，即softmax损失</li><li>box regression loss $L_{box}$，计算方式SSD中相同，即smooth-L1损失</li><li>mask loss $L_{mask}$，计算集成后的masks $M$ 和ground truth masks $M_{gt}$之间的二分类交叉熵损失：$L_{mask}=BCE(M,M_{gt})$</li></ol><p>这三种损失的权重系数为$1,1.5,6.125$。并且训练过程中，使用OHEM算法保证正负样本比例为$3:1$。</p><p>值得注意的是，其中 mask loss 在计算时，因为 mask 的大小是$138 \times 138$，需要先将原图的 mask 数据通过双线性插值缩小到这一尺寸。</p><h3 id="Cropping-Masks"><a href="#Cropping-Masks" class="headerlink" title="Cropping Masks"></a>Cropping Masks</h3><p>在评估期间，我们使用<strong>预测的边界框</strong>裁剪最终的掩码。在训练过程中，我们改为使用真实边界框裁剪，并将$L_{mask}$除以真实边界框面积，以保留原型中的小对象。</p><h3 id="Fast-NMS"><a href="#Fast-NMS" class="headerlink" title="Fast NMS"></a>Fast NMS</h3><p>在得到全部的位置偏移后，可以调整 anchor 的位置得到ROI位置。</p><p>未完待续</p><h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2></div><div><div style="text-align:center;color:#ccc;font-size:14px">------ 本文结束------</div></div><div class="reward-container"><div>坚持原创技术分享，您的支持将鼓励我继续创作！</div> <button onclick='var qr=document.getElementById("qr");qr.style.display="none"===qr.style.display?"block":"none"'> 打赏</button><div id="qr" style="display:none"><div style="display:inline-block"> <img src="/uploads/wechat.png" alt="zdaiot 微信支付"><p>微信支付</p></div><div style="display:inline-block"> <img src="/uploads/aipay.jpg" alt="zdaiot 支付宝"><p>支付宝</p></div></div></div><div><ul class="post-copyright"><li class="post-copyright-author"> <strong>本文作者：</strong> zdaiot</li><li class="post-copyright-link"> <strong>本文链接：</strong> <a href="https://www.zdaiot.com/DeepLearningApplications/实例分割/YOLACT详解/" title="YOLACT详解">https://www.zdaiot.com/DeepLearningApplications/实例分割/YOLACT详解/</a></li><li class="post-copyright-license"> <strong>版权声明：</strong> 本博客所有文章除特别声明外，均采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i> BY-NC-SA</a> 许可协议。转载请注明出处！</li></ul></div><div class="followme"><p>欢迎关注我的其它发布渠道</p><div class="social-list"><div class="social-item"><a target="_blank" class="social-link" href="/uploads/wechat-qcode.jpg"><span class="icon"><i class="fab fa-weixin"></i></span> <span class="label">WeChat</span></a></div></div></div><footer class="post-footer"><div class="post-tags"><a href="/tags/实例分割/" rel="tag"><i class="fa fa-tag"></i> 实例分割</a><a href="/tags/实时实例分割/" rel="tag"><i class="fa fa-tag"></i> 实时实例分割</a></div><div class="post-nav"><div class="post-nav-item"><a href="/Python/基础语法/Python进程池：multiprocessing.pool/" rel="prev" title="Python进程池：multiprocessing.pool"><i class="fa fa-chevron-left"></i> Python进程池：multiprocessing.pool</a></div><div class="post-nav-item"> <a href="/DeepLearningApplications/Few-shot Learning/Multi-label Zero-Shot Learning with Structured Knowledge Graphs/" rel="next" title="Multi-label Zero-Shot Learning with Structured Knowledge Graphs">Multi-label Zero-Shot Learning with Structured Knowledge Graphs<i class="fa fa-chevron-right"></i></a></div></div></footer></article></div><div class="comments" id="gitalk-container"></div><script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script></div><div class="toggle sidebar-toggle"><span class="toggle-line toggle-line-first"></span><span class="toggle-line toggle-line-middle"></span><span class="toggle-line toggle-line-last"></span></div><aside class="sidebar"><div class="sidebar-inner"><ul class="sidebar-nav motion-element"><li class="sidebar-nav-toc"> 文章目录</li><li class="sidebar-nav-overview"> 站点概览</li></ul><div class="post-toc-wrap sidebar-panel"><div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#主要贡献"><span class="nav-number">1.</span> <span class="nav-text">主要贡献</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#网络结构"><span class="nav-number">2.</span> <span class="nav-text">网络结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#预处理"><span class="nav-number">2.1.</span> <span class="nav-text">预处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Backbone"><span class="nav-number">2.2.</span> <span class="nav-text">Backbone</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FPN"><span class="nav-number">2.3.</span> <span class="nav-text">FPN</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Protonet"><span class="nav-number">2.4.</span> <span class="nav-text">Protonet</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Prediction-Head"><span class="nav-number">2.5.</span> <span class="nav-text">Prediction Head</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Mask-Assembly"><span class="nav-number">2.6.</span> <span class="nav-text">Mask Assembly</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#损失函数"><span class="nav-number">2.7.</span> <span class="nav-text">损失函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Cropping-Masks"><span class="nav-number">2.8.</span> <span class="nav-text">Cropping Masks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Fast-NMS"><span class="nav-number">2.9.</span> <span class="nav-text">Fast NMS</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div></div><div class="site-overview-wrap sidebar-panel"><div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person"> <img class="site-author-image" itemprop="image" alt="zdaiot" src="/uploads/avatar.png"><p class="site-author-name" itemprop="name">zdaiot</p><div class="site-description" itemprop="description">404NotFound</div></div><div class="site-state-wrap motion-element"><nav class="site-state"><div class="site-state-item site-state-posts"> <a href="/archives/"><span class="site-state-item-count">305</span> <span class="site-state-item-name">日志</span></a></div><div class="site-state-item site-state-categories"> <a href="/categories/"><span class="site-state-item-count">52</span> <span class="site-state-item-name">分类</span></a></div><div class="site-state-item site-state-tags"> <a href="/tags/"><span class="site-state-item-count">364</span> <span class="site-state-item-name">标签</span></a></div></nav></div><div class="links-of-author motion-element"><span class="links-of-author-item"><a href="https://github.com/zdaiot" title="GitHub → https://github.com/zdaiot" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i> GitHub</a></span><span class="links-of-author-item"><a href="mailto:zdaiot@163.com" title="E-Mail → mailto:zdaiot@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i> E-Mail</a></span><span class="links-of-author-item"><a href="https://www.zhihu.com/people/" title="知乎 → https://www.zhihu.com/people/" rel="noopener" target="_blank"><i class="fa fa-book fa-fw"></i> 知乎</a></span><span class="links-of-author-item"><a href="https://blog.csdn.net/zdaiot" title="CSDN → https://blog.csdn.net/zdaiot" rel="noopener" target="_blank"><i class="fa fa-copyright fa-fw"></i> CSDN</a></span></div></div><div class="back-to-top motion-element"><i class="fa fa-arrow-up"></i> <span>0%</span></div></div></aside><div id="sidebar-dimmer"></div></div></main><footer class="footer"><div class="footer-inner"><div class="beian"><a href="https://beian.miit.gov.cn" rel="noopener" target="_blank">陕ICP备19018820号</a></div><div class="copyright"> &copy; <span itemprop="copyrightYear">2021</span><span class="with-love"><i class="fa fa-heart"></i></span> <span class="author" itemprop="copyrightHolder">zdaiot</span> <span class="post-meta-divider">|</span><span class="post-meta-item-icon"><i class="fa fa-chart-area"></i></span> <span title="站点总字数">2m</span> <span class="post-meta-divider">|</span><span class="post-meta-item-icon"><i class="fa fa-coffee"></i></span> <span title="站点阅读时长">30:05</span></div><div class="addthis_inline_share_toolbox"><script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5b5e7e498f94b7ad" async="async"></script></div> <span id="timeDate">载入天数...</span><span id="times">载入时分秒...</span><script>var now=new Date;function createtime(){var n=new Date("08/01/2018 00:00:00");now.setTime(now.getTime()+250),days=(now-n)/1e3/60/60/24,dnum=Math.floor(days),hours=(now-n)/1e3/60/60-24*dnum,hnum=Math.floor(hours),1==String(hnum).length&&(hnum="0"+hnum),minutes=(now-n)/1e3/60-1440*dnum-60*hnum,mnum=Math.floor(minutes),1==String(mnum).length&&(mnum="0"+mnum),seconds=(now-n)/1e3-86400*dnum-3600*hnum-60*mnum,snum=Math.round(seconds),1==String(snum).length&&(snum="0"+snum),document.getElementById("timeDate").innerHTML="Run for "+dnum+" Days ",document.getElementById("times").innerHTML=hnum+" Hours "+mnum+" m "+snum+" s"}setInterval("createtime()",250)</script><div class="busuanzi-count"><script data-pjax async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><span class="post-meta-item" id="busuanzi_container_site_uv" style="display:none"><span class="post-meta-item-icon"><i class="user"></i></span><span class="site-uv" title="总访客量"><span id="busuanzi_value_site_uv"></span></span></span> <span class="post-meta-divider">|</span><span class="post-meta-item" id="busuanzi_container_site_pv" style="display:none"><span class="post-meta-item-icon"><i class="eye"></i></span><span class="site-pv" title="总访问量"><span id="busuanzi_value_site_pv"></span></span></span></div></div></footer></div><script src="/lib/anime.min.js"></script><script src="//cdn.jsdelivr.net/gh/theme-next/theme-next-pjax@0/pjax.min.js"></script><script src="/lib/velocity/velocity.min.js"></script><script src="/lib/velocity/velocity.ui.min.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/pisces.js"></script><script src="/js/next-boot.js"></script><script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script><script data-pjax>!function(){var o,n,e=document.getElementsByTagName("link");if(0<e.length)for(i=0;i<e.length;i++)"canonical"==e[i].rel.toLowerCase()&&e[i].href&&(o=e[i].href);n=o?o.split(":")[0]:window.location.protocol.split(":")[0],o||(o=window.location.href),function(){var e=o,i=document.referrer;if(!/([http|https]:\/\/[a-zA-Z0-9\_\.]+\.baidu\.com)/gi.test(e)){var t="https"===String(n).toLowerCase()?"https://sp0.baidu.com/9_Q4simg2RQJ8t7jm9iCKT-xh_/s.gif":"//api.share.baidu.com/s.gif";i?(t+="?r="+encodeURIComponent(document.referrer),e&&(t+="&l="+e)):e&&(t+="?l="+e),(new Image).src=t}}(window)}()</script><script src="/js/local-search.js"></script><div id="pjax"><script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script><link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css"><script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '4800250e682fe873198b',
+      clientSecret: '80f7f33f5f8ddfd3944f455cabadda4ff3299147',
+      repo        : 'zdaiot.github.io',
+      owner       : 'zdaiot',
+      admin       : ['zdaiot'],
+      id          : '292b127b06c8079c1082303fbfa9c1fd',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({pluginRootPath:"live2dw/",pluginJsPath:"lib/",pluginModelPath:"assets/",tagMode:!1,log:!1,model:{jsonPath:"/live2dw/assets/wanko.model.json"},display:{position:"left",width:150,height:300},mobile:{show:!0}})</script></body></html>

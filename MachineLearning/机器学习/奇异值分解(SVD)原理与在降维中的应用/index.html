@@ -1,0 +1,184 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=2"><meta name="theme-color" content="#222"><meta name="generator" content="Hexo 3.9.0"><link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png"><link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png"><link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png"><link rel="mask-icon" href="/images/logo.svg" color="#222"><link rel="stylesheet" href="/css/main.css"><link rel="stylesheet" href="/lib/font-awesome/css/all.min.css"><script id="hexo-configurations">var NexT=window.NexT||{},CONFIG={hostname:"www.zdaiot.com",root:"/",scheme:"Gemini",version:"7.8.0",exturl:!1,sidebar:{position:"left",display:"post",offset:12,onmobile:!1},copycode:{enable:!0,show_result:!0,style:null},back2top:{enable:!0,sidebar:!0,scrollpercent:!0},bookmark:{enable:!1,color:"#222",save:"auto"},fancybox:!1,mediumzoom:!1,lazyload:!1,pangu:!1,comments:{style:"tabs",active:null,storage:!0,nav:null},algolia:{hits:{per_page:10},labels:{input_placeholder:"Search for Posts",hits_empty:"We didn't find any results for the search: ${query}",hits_stats:"${hits} results found in ${time} ms"}},localsearch:{enable:!0,trigger:"auto",top_n_per_article:1,unescape:!1,preload:!1},motion:{enable:!0,async:!1,transition:{post_block:"fadeIn",post_header:"slideDownIn",post_body:"slideDownIn",coll_header:"slideLeftIn",sidebar:"slideUpIn"}},path:"search.xml"}</script><meta name="description" content="奇异值分解(SVD)原理与在降维中的应用奇异值分解(Singular Value Decomposition，以下简称SVD)是在机器学习领域广泛应用的算法，它不光可以用于降维算法中的特征分解，还可以用于推荐系统，以及自然语言处理等领域。是很多机器学习算法的基石。本文就对SVD的原理做一个总结，并讨论在在PCA降维算法中是如何运用运用SVD的。 回顾特征值和特征向量我们首先回顾下特征值和特征向量的"><meta name="keywords" content="降维,SVD"><meta property="og:type" content="article"><meta property="og:title" content="奇异值分解(SVD)原理与在降维中的应用"><meta property="og:url" content="https://www.zdaiot.com/MachineLearning/机器学习/奇异值分解(SVD)原理与在降维中的应用/index.html"><meta property="og:site_name" content="zdaiot"><meta property="og:description" content="奇异值分解(SVD)原理与在降维中的应用奇异值分解(Singular Value Decomposition，以下简称SVD)是在机器学习领域广泛应用的算法，它不光可以用于降维算法中的特征分解，还可以用于推荐系统，以及自然语言处理等领域。是很多机器学习算法的基石。本文就对SVD的原理做一个总结，并讨论在在PCA降维算法中是如何运用运用SVD的。 回顾特征值和特征向量我们首先回顾下特征值和特征向量的"><meta property="og:locale" content="zh-CN"><meta property="og:image" content="https://www.zdaiot.com/MachineLearning/机器学习/奇异值分解(SVD)原理与在降维中的应用/奇异值分解(SVD"><meta property="og:image" content="https://www.zdaiot.com/MachineLearning/机器学习/奇异值分解(SVD)原理与在降维中的应用/奇异值分解(SVD"><meta property="og:updated_time" content="2019-09-15T03:19:57.000Z"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="奇异值分解(SVD)原理与在降维中的应用"><meta name="twitter:description" content="奇异值分解(SVD)原理与在降维中的应用奇异值分解(Singular Value Decomposition，以下简称SVD)是在机器学习领域广泛应用的算法，它不光可以用于降维算法中的特征分解，还可以用于推荐系统，以及自然语言处理等领域。是很多机器学习算法的基石。本文就对SVD的原理做一个总结，并讨论在在PCA降维算法中是如何运用运用SVD的。 回顾特征值和特征向量我们首先回顾下特征值和特征向量的"><meta name="twitter:image" content="https://www.zdaiot.com/MachineLearning/机器学习/奇异值分解(SVD)原理与在降维中的应用/奇异值分解(SVD"><link rel="canonical" href="https://www.zdaiot.com/MachineLearning/机器学习/奇异值分解(SVD)原理与在降维中的应用/"><script id="page-configurations">CONFIG.page={sidebar:"",isHome:!1,isPost:!0,lang:"zh-CN"}</script><title>奇异值分解(SVD)原理与在降维中的应用 | zdaiot</title><script data-pjax>var _hmt=_hmt||[];!function(){var e=document.createElement("script");e.src="https://hm.baidu.com/hm.js?0b0b58037319da4959d5a3c014160ccd";var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t)}()</script><noscript><style>.sidebar-inner,.use-motion .brand,.use-motion .collection-header,.use-motion .comments,.use-motion .menu-item,.use-motion .pagination,.use-motion .post-block,.use-motion .post-body,.use-motion .post-header{opacity:initial}.use-motion .site-subtitle,.use-motion .site-title{opacity:initial;top:initial}.use-motion .logo-line-before i{left:initial}.use-motion .logo-line-after i{right:initial}</style></noscript></head><body itemscope itemtype="http://schema.org/WebPage"><div class="container use-motion"><div class="headband"></div><header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="header-inner"><div class="site-brand-container"><div class="site-nav-toggle"><div class="toggle" aria-label="切换导航栏"><span class="toggle-line toggle-line-first"></span><span class="toggle-line toggle-line-middle"></span><span class="toggle-line toggle-line-last"></span></div></div><div class="site-meta"><a href="/" class="brand" rel="start"><span class="logo-line-before"><i></i></span><h1 class="site-title">zdaiot</h1><span class="logo-line-after"><i></i></span></a><p class="site-subtitle" itemprop="description">404NotFound</p></div><div class="site-nav-right"><div class="toggle popup-trigger"><i class="fa fa-search fa-fw fa-lg"></i></div></div></div><nav class="site-nav"><ul id="menu" class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i> 首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i> 关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i> 标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i> 分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i> 归档</a></li><li class="menu-item menu-item-search"><a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i> 搜索</a></li></ul></nav><div class="search-pop-overlay"><div class="popup search-popup"><div class="search-header"><span class="search-icon"><i class="fa fa-search"></i></span><div class="search-input-container"> <input autocomplete="off" autocapitalize="off" placeholder="搜索..." spellcheck="false" type="search" class="search-input"></div><span class="popup-btn-close"><i class="fa fa-times-circle"></i></span></div><div id="search-result"><div id="no-result"><i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i></div></div></div></div></div></header><main class="main"><div class="main-inner"><div class="content-wrap"><div class="content post posts-expand"><article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN"><link itemprop="mainEntityOfPage" href="https://www.zdaiot.com/MachineLearning/机器学习/奇异值分解(SVD)原理与在降维中的应用/"><span hidden itemprop="author" itemscope itemtype="http://schema.org/Person"><meta itemprop="image" content="/uploads/avatar.png"><meta itemprop="name" content="zdaiot"><meta itemprop="description" content="404NotFound"></span><span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization"><meta itemprop="name" content="zdaiot"></span><header class="post-header"><h1 class="post-title" itemprop="name headline"> 奇异值分解(SVD)原理与在降维中的应用<a href="https://github.com/zdaiot/zdaiot.github.io/tree/hexo/source/_posts/MachineLearning/机器学习/奇异值分解(SVD)原理与在降维中的应用.md" class="post-edit-link" title="编辑" rel="noopener" target="_blank"><i class="fa fa-pencil-alt"></i></a></h1><div class="post-meta"><span class="post-meta-item"><span class="post-meta-item-icon"><i class="far fa-calendar"></i></span> <span class="post-meta-item-text">发表于</span> <time title="创建时间：2018-11-07 20:51:59" itemprop="dateCreated datePublished" datetime="2018-11-07T20:51:59+08:00">2018-11-07</time></span><span class="post-meta-item"><span class="post-meta-item-icon"><i class="far fa-calendar-check"></i></span> <span class="post-meta-item-text">更新于</span> <time title="修改时间：2019-09-15 11:19:57" itemprop="dateModified" datetime="2019-09-15T11:19:57+08:00">2019-09-15</time></span><span class="post-meta-item"><span class="post-meta-item-icon"><i class="far fa-folder"></i></span> <span class="post-meta-item-text">分类于</span> <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/MachineLearning/" itemprop="url" rel="index"><span itemprop="name">MachineLearning</span></a></span> ， <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/MachineLearning/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span></span><span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display:none"><span class="post-meta-item-icon"><i class="eye"></i></span> <span class="post-meta-item-text">阅读次数：</span><span id="busuanzi_value_page_pv"></span></span><br><span class="post-meta-item" title="本文字数"><span class="post-meta-item-icon"><i class="far fa-file-word"></i></span> <span class="post-meta-item-text">本文字数：</span> <span>5.8k</span></span><span class="post-meta-item" title="阅读时长"><span class="post-meta-item-icon"><i class="far fa-clock"></i></span> <span class="post-meta-item-text">阅读时长 &asymp;</span> <span>5 分钟</span></span></div></header><div class="post-body" itemprop="articleBody"><h1 id="奇异值分解-SVD-原理与在降维中的应用"><a href="#奇异值分解-SVD-原理与在降维中的应用" class="headerlink" title="奇异值分解(SVD)原理与在降维中的应用"></a>奇异值分解(SVD)原理与在降维中的应用</h1><p>奇异值分解(Singular Value Decomposition，以下简称SVD)是在机器学习领域广泛应用的算法，它不光可以用于降维算法中的特征分解，还可以用于推荐系统，以及自然语言处理等领域。是很多机器学习算法的基石。本文就对SVD的原理做一个总结，并讨论在在PCA降维算法中是如何运用运用SVD的。</p><h2 id="回顾特征值和特征向量"><a href="#回顾特征值和特征向量" class="headerlink" title="回顾特征值和特征向量"></a>回顾特征值和特征向量</h2><p>我们首先回顾下特征值和特征向量的定义如下：<script type="math/tex">Ax=\lambda x</script></p><p>其中A是一个$n \times n$的矩阵，$x$是一个$n$维向量，则我们说$\lambda$是矩阵A的一个特征值，而$x$是矩阵A的特征值$\lambda$所对应的特征向量。</p><p>求出特征值和特征向量有什么好处呢？ 就是我们可以将矩阵A特征分解。如果我们求出了矩阵A的$n$个特征值$\lambda_1 \leq \lambda_2 \leq … \leq \lambda_n$,以及这$n$个特征值所对应的特征向量$\{w_1,w_2,…w_n\}$，，如果这$n$个特征向量线性无关，那么矩阵A就可以用下式的特征分解表示：<script type="math/tex">A=W\Sigma W^{-1}</script></p><p>其中W是这$n$个特征向量所张成的$n \times n$维矩阵，而$\Sigma$为这n个特征值为主对角线的$n \times n$维矩阵。</p><p>一般我们会把W的这$n$个特征向量标准化，即满足$||w_i||_2 =1$, 或者说$w_i^Tw_i =1$，此时W的$n$个特征向量为标准正交基，满足$W^TW=I$，即$W^T=W^{-1}$, 也就是说W为酉矩阵。</p><p>这样我们的特征分解表达式可以写成<script type="math/tex">A=W\Sigma W^T</script></p><p>注意到要进行特征分解，矩阵A必须为方阵。那么如果A不是方阵，即行和列不相同时，我们还可以对矩阵进行分解吗？答案是可以，此时我们的SVD登场了。</p><h1 id="SVD的定义"><a href="#SVD的定义" class="headerlink" title="SVD的定义"></a>SVD的定义</h1><p>SVD也是对矩阵进行分解，但是和特征分解不同，SVD并不要求要分解的矩阵为方阵。假设我们的矩阵A是一个$m \times n$的矩阵，那么我们定义矩阵A的SVD为：<script type="math/tex">A = U\Sigma V^T</script></p><p>其中U是一个$m \times m$的矩阵，$\Sigma$是一个$m \times n$的矩阵，除了主对角线上的元素以外全为0，主对角线上的每个元素都称为奇异值，V是一个$n \times n$的矩阵。U和V都是酉矩阵，即满足$U^TU=I, V^TV=I$。下图可以很形象的看出上面SVD的定义：</p><p><img src="/MachineLearning/机器学习/奇异值分解(SVD)原理与在降维中的应用/奇异值分解(SVD" alt>原理与在降维中的应用/15415948718901568517601024.png)</p><p>那么我们如何求出SVD分解后的$U, \Sigma, V$这三个矩阵呢？</p><p>如果我们将A的转置和A做矩阵乘法，那么会得到$n \times n$的一个方阵$A^TA$。既然$A^TA$是方阵，那么我们就可以进行特征分解，得到的特征值和特征向量满足下式：<script type="math/tex">(A^TA)v_i = \lambda_i v_i</script></p><p>这样我们就可以得到矩阵$A^TA$的n个特征值和对应的n个特征向量$v$了。将$A^TA$的所有特征向量张成一个$n \times n$的矩阵V，就是我们SVD公式里面的V矩阵了。一般我们将V中的每个特征向量叫做A的右奇异向量。</p><p>如果我们将A和A的转置做矩阵乘法，那么会得到$m \times m$的一个方阵$AA^T$。既然$AA^T$是方阵，那么我们就可以进行特征分解，得到的特征值和特征向量满足下式：<script type="math/tex">(AA^T)u_i = \lambda_i u_i</script></p><p>这样我们就可以得到矩阵$AA^T$的m个特征值和对应的m个特征向量$u$了。将$AA^T$的所有特征向量张成一个$m \times m$的矩阵U，就是我们SVD公式里面的U矩阵了。一般我们将U中的每个特征向量叫做A的左奇异向量。</p><p>U和V我们都求出来了，现在就剩下奇异值矩阵$\Sigma$没有求出了。由于$\Sigma$除了对角线上是奇异值其他位置都是0，那我们只需要求出每个奇异值$\sigma$就可以了。</p><p>我们注意到:<script type="math/tex">A=U\Sigma V^T \Rightarrow AV=U\Sigma V^TV \Rightarrow AV=U\Sigma \Rightarrow Av_i = \sigma_i u_i \Rightarrow \sigma_i = Av_i / u_i</script></p><p>这样我们可以求出我们的每个奇异值，进而求出奇异值矩阵$\Sigma$。</p><p>上面还有一个问题没有讲，就是我们说$A^TA$的特征向量组成的就是我们SVD中的V矩阵，而$AA^T$的特征向量组成的就是我们SVD中的U矩阵，这有什么根据吗？这个其实很容易证明，我们以V矩阵的证明为例。<script type="math/tex">A=U\Sigma V^T \Rightarrow A^T=V\Sigma^T U^T \Rightarrow A^TA = V\Sigma^T U^TU\Sigma V^T = V\Sigma^2V^T</script></p><p>上式证明使用了:$U^TU=I, \Sigma^T\Sigma=\Sigma^2。$可以看出$A^TA$的特征向量组成的的确就是我们SVD中的V矩阵。类似的方法可以得到$AA^T$的特征向量组成的就是我们SVD中的U矩阵。</p><p>进一步我们还可以看出我们的特征值矩阵等于奇异值矩阵的平方，也就是说特征值和奇异值满足如下关系：<script type="math/tex">\sigma_i = \sqrt{\lambda_i}</script></p><p>这样也就是说，我们可以不用$ \sigma_i = Av_i / u_i$来计算奇异值，也可以通过求出$A^TA$的特征值取平方根来求奇异值。</p><h2 id="SVD计算举例"><a href="#SVD计算举例" class="headerlink" title="SVD计算举例"></a>SVD计算举例</h2><p>这里我们用一个简单的例子来说明矩阵是如何进行奇异值分解的。我们的矩阵A定义为：</p><script type="math/tex;mode=display">\mathbf{A} =
+\left( \begin{array}{ccc}
+0& 1\\ 1& 1\\  
+1& 0 \end{array} \right)</script><p>我们首先求出$A^TA$和$AA^T$</p><script type="math/tex;mode=display">\mathbf{A^TA} =
+\left( \begin{array}{ccc}
+0& 1 &1\\
+1&1& 0 \end{array} \right) \left( \begin{array}{ccc}
+0& 1\\ 1& 1\\  
+1& 0 \end{array} \right) = \left( \begin{array}{ccc}
+2& 1 \\
+1& 2 \end{array} \right)</script><script type="math/tex;mode=display">\mathbf{AA^T} =
+ \left( \begin{array}{ccc}
+0& 1\\ 1& 1\\  
+1& 0 \end{array} \right) \left( \begin{array}{ccc}
+0& 1 &1\\
+1&1& 0 \end{array} \right) = \left( \begin{array}{ccc}
+1& 1 & 0\\ 1& 2 & 1\\
+0& 1& 1 \end{array} \right)</script><p> 进而求出$A^TA$的特征值和特征向量：<script type="math/tex">\lambda_1= 3; v_1 = \left( \begin{array}{ccc}
+1/\sqrt{2} \\
+1/\sqrt{2} \end{array} \right); \lambda_2= 1; v_2 = \left( \begin{array}{ccc}
+-1/\sqrt{2} \\
+1/\sqrt{2} \end{array} \right)</script></p><p>接着求$AA^T$的特征值和特征向量：</p><script type="math/tex;mode=display">\lambda_1= 3; u_1 = \left( \begin{array}{ccc}
+1/\sqrt{6} \\ 2/\sqrt{6} \\
+1/\sqrt{6} \end{array} \right); \lambda_2= 1; u_2 = \left( \begin{array}{ccc}
+1/\sqrt{2} \\ 0 \\
+-1/\sqrt{2} \end{array} \right); \lambda_3= 0; u_3 = \left( \begin{array}{ccc}
+1/\sqrt{3} \\ -1/\sqrt{3} \\
+1/\sqrt{3} \end{array} \right)$$　
+
+利用$Av_i = \sigma_i u_i, i=1,2$求奇异值：</script><p> \left( \begin{array}{ccc}<br>0&amp; 1\\ 1&amp; 1\\<br>1&amp; 0 \end{array} \right) \left( \begin{array}{ccc}<br>1/\sqrt{2} \\<br>1/\sqrt{2} \end{array} \right) = \sigma_1 \left( \begin{array}{ccc}<br>1/\sqrt{6} \\ 2/\sqrt{6} \\<br>1/\sqrt{6} \end{array} \right) \Rightarrow \sigma_1=\sqrt{3}$$</p><script type="math/tex;mode=display">
+ \left( \begin{array}{ccc}
+0& 1\\ 1& 1\\  
+1& 0 \end{array} \right) \left( \begin{array}{ccc}
+-1/\sqrt{2} \\
+1/\sqrt{2} \end{array} \right) = \sigma_2 \left( \begin{array}{ccc}
+1/\sqrt{2} \\ 0 \\
+-1/\sqrt{2} \end{array} \right) \Rightarrow \sigma_2=1</script><p>当然，我们也可以用$\sigma_i = \sqrt{\lambda_i}$直接求出奇异值为$\sqrt{3}$和1.</p><p>最终得到A的奇异值分解为：<script type="math/tex">A=U\Sigma V^T = \left( \begin{array}{ccc}
+1/\sqrt{6} & 1/\sqrt{2} & 1/\sqrt{3} \\ 2/\sqrt{6} & 0 & -1/\sqrt{3}\\
+1/\sqrt{6} & -1/\sqrt{2} & 1/\sqrt{3} \end{array} \right) \left( \begin{array}{ccc}
+\sqrt{3} & 0 \\ 0 & 1\\
+0 & 0 \end{array} \right) \left( \begin{array}{ccc}
+1/\sqrt{2} & 1/\sqrt{2} \\
+-1/\sqrt{2} & 1/\sqrt{2} \end{array} \right)</script>　　　　　　</p><h2 id="SVD的一些性质"><a href="#SVD的一些性质" class="headerlink" title="SVD的一些性质　"></a>SVD的一些性质　</h2><p>上面几节我们对SVD的定义和计算做了详细的描述，似乎看不出我们费这么大的力气做SVD有什么好处。那么SVD有什么重要的性质值得我们注意呢？</p><p>对于奇异值,它跟我们特征分解中的特征值类似，在奇异值矩阵中也是按照从大到小排列，而且奇异值的减少特别的快，在很多情况下，前10%甚至1%的奇异值的和就占了全部的奇异值之和的99%以上的比例。也就是说，我们也可以用最大的k个的奇异值和对应的左右奇异向量来近似描述矩阵。也就是说：<script type="math/tex">A_{m \times n} = U_{m \times m}\Sigma_{m \times n} V^T_{n \times n} \approx U_{m \times k}\Sigma_{k \times k} V^T_{k \times n}</script></p><p>其中k要比n小很多，也就是一个大的矩阵A可以用三个小的矩阵$U_{m \times k},\Sigma_{k \times k} ,V^T_{k \times n}$来表示。如下图所示，现在我们的矩阵A只需要灰色的部分的三个小矩阵就可以近似描述了。</p><p><img src="/MachineLearning/机器学习/奇异值分解(SVD)原理与在降维中的应用/奇异值分解(SVD" alt>原理与在降维中的应用/15415948718941568517601028.png)</p><p>由于这个重要的性质，SVD可以用于PCA降维，来做数据压缩和去噪。也可以用于推荐算法，将用户和喜好对应的矩阵做特征分解，进而得到隐含的用户需求来做推荐。同时也可以用于NLP中的算法，比如潜在语义索引（LSI）。下面我们就对SVD用于PCA降维做一个介绍。</p><h2 id="SVD用于PCA"><a href="#SVD用于PCA" class="headerlink" title="SVD用于PCA"></a>SVD用于PCA</h2><p>在<a href="http://www.cnblogs.com/pinard/p/6239403.html" target="_blank" rel="noopener">主成分分析（PCA）原理总结</a>中，我们讲到要用PCA降维，需要找到样本协方差矩阵$X^TX$的最大的d个特征向量，然后用这最大的d个特征向量张成的矩阵来做低维投影降维。可以看出，在这个过程中需要先求出协方差矩阵$X^TX$，当样本数多样本特征数也多的时候，这个计算量是很大的。</p><p>注意到我们的SVD也可以得到协方差矩阵$X^TX$最大的d个特征向量张成的矩阵，但是SVD有个好处，有一些SVD的实现算法可以不求先求出协方差矩阵$X^TX$，也能求出我们的右奇异矩阵$V$。也就是说，我们的PCA算法可以不用做特征分解，而是做SVD来完成。这个方法在样本量很大的时候很有效。实际上，scikit-learn的PCA算法的背后真正的实现就是用的SVD，而不是我们我们认为的暴力特征分解。</p><p>另一方面，注意到PCA仅仅使用了我们SVD的右奇异矩阵，没有使用左奇异矩阵，那么左奇异矩阵有什么用呢？</p><p>假设我们的样本是$m \times n$的矩阵X，如果我们通过SVD找到了矩阵$XX^T$最大的d个特征向量张成的$m \times d$维矩阵U，则我们如果进行如下处理：<script type="math/tex">X'_{d \times n} = U_{d \times m}^TX_{m \times n}</script></p><p>可以得到一个$d \times n$的矩阵X‘,这个矩阵和我们原来的$m \times n$维样本矩阵X相比，行数从m减到了k，可见对行数进行了压缩。也就是说，左奇异矩阵可以用于行数的压缩。相对的，右奇异矩阵可以用于列数即特征维度的压缩，也就是我们的PCA降维。　　　　</p><h2 id="SVD小结"><a href="#SVD小结" class="headerlink" title="SVD小结　"></a>SVD小结　</h2><p>SVD作为一个很基本的算法，在很多机器学习算法中都有它的身影，特别是在现在的大数据时代，由于SVD可以实现并行化，因此更是大展身手。SVD的原理不难，只要有基本的线性代数知识就可以理解，实现也很简单因此值得仔细的研究。当然，SVD的缺点是分解出的矩阵解释性往往不强，有点黑盒子的味道，不过这不影响它的使用。</p><h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://www.cnblogs.com/pinard/p/6251584.html" target="_blank" rel="noopener">奇异值分解(SVD)原理与在降维中的应用</a></p></div><div><div style="text-align:center;color:#ccc;font-size:14px">------ 本文结束------</div></div><div class="reward-container"><div>坚持原创技术分享，您的支持将鼓励我继续创作！</div> <button onclick='var qr=document.getElementById("qr");qr.style.display="none"===qr.style.display?"block":"none"'> 打赏</button><div id="qr" style="display:none"><div style="display:inline-block"> <img src="/uploads/wechat.png" alt="zdaiot 微信支付"><p>微信支付</p></div><div style="display:inline-block"> <img src="/uploads/aipay.jpg" alt="zdaiot 支付宝"><p>支付宝</p></div></div></div><div><ul class="post-copyright"><li class="post-copyright-author"> <strong>本文作者：</strong> zdaiot</li><li class="post-copyright-link"> <strong>本文链接：</strong> <a href="https://www.zdaiot.com/MachineLearning/机器学习/奇异值分解(SVD)原理与在降维中的应用/" title="奇异值分解(SVD)原理与在降维中的应用">https://www.zdaiot.com/MachineLearning/机器学习/奇异值分解(SVD)原理与在降维中的应用/</a></li><li class="post-copyright-license"> <strong>版权声明：</strong> 本博客所有文章除特别声明外，均采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i> BY-NC-SA</a> 许可协议。转载请注明出处！</li></ul></div><div class="followme"><p>欢迎关注我的其它发布渠道</p><div class="social-list"><div class="social-item"><a target="_blank" class="social-link" href="/uploads/wechat-qcode.jpg"><span class="icon"><i class="fab fa-weixin"></i></span> <span class="label">WeChat</span></a></div></div></div><footer class="post-footer"><div class="post-tags"><a href="/tags/降维/" rel="tag"><i class="fa fa-tag"></i> 降维</a><a href="/tags/SVD/" rel="tag"><i class="fa fa-tag"></i> SVD</a></div><div class="post-nav"><div class="post-nav-item"><a href="/MachineLearning/神经网络/BatchNorm/" rel="prev" title="BatchNorm"><i class="fa fa-chevron-left"></i> BatchNorm</a></div><div class="post-nav-item"> <a href="/Tools/VisualStudio/打包使用调试dll以及注意事项/" rel="next" title="打包使用调试dll以及注意事项">打包使用调试dll以及注意事项<i class="fa fa-chevron-right"></i></a></div></div></footer></article></div><div class="comments" id="gitalk-container"></div><script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script></div><div class="toggle sidebar-toggle"><span class="toggle-line toggle-line-first"></span><span class="toggle-line toggle-line-middle"></span><span class="toggle-line toggle-line-last"></span></div><aside class="sidebar"><div class="sidebar-inner"><ul class="sidebar-nav motion-element"><li class="sidebar-nav-toc"> 文章目录</li><li class="sidebar-nav-overview"> 站点概览</li></ul><div class="post-toc-wrap sidebar-panel"><div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#奇异值分解-SVD-原理与在降维中的应用"><span class="nav-number">1.</span> <span class="nav-text">奇异值分解(SVD)原理与在降维中的应用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#回顾特征值和特征向量"><span class="nav-number">1.1.</span> <span class="nav-text">回顾特征值和特征向量</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SVD的定义"><span class="nav-number">2.</span> <span class="nav-text">SVD的定义</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#SVD计算举例"><span class="nav-number">2.1.</span> <span class="nav-text">SVD计算举例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SVD的一些性质"><span class="nav-number">2.2.</span> <span class="nav-text">SVD的一些性质　</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SVD用于PCA"><span class="nav-number">2.3.</span> <span class="nav-text">SVD用于PCA</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SVD小结"><span class="nav-number">2.4.</span> <span class="nav-text">SVD小结　</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-number">2.5.</span> <span class="nav-text">参考</span></a></li></ol></li></ol></div></div><div class="site-overview-wrap sidebar-panel"><div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person"> <img class="site-author-image" itemprop="image" alt="zdaiot" src="/uploads/avatar.png"><p class="site-author-name" itemprop="name">zdaiot</p><div class="site-description" itemprop="description">404NotFound</div></div><div class="site-state-wrap motion-element"><nav class="site-state"><div class="site-state-item site-state-posts"> <a href="/archives/"><span class="site-state-item-count">305</span> <span class="site-state-item-name">日志</span></a></div><div class="site-state-item site-state-categories"> <a href="/categories/"><span class="site-state-item-count">52</span> <span class="site-state-item-name">分类</span></a></div><div class="site-state-item site-state-tags"> <a href="/tags/"><span class="site-state-item-count">364</span> <span class="site-state-item-name">标签</span></a></div></nav></div><div class="links-of-author motion-element"><span class="links-of-author-item"><a href="https://github.com/zdaiot" title="GitHub → https://github.com/zdaiot" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i> GitHub</a></span><span class="links-of-author-item"><a href="mailto:zdaiot@163.com" title="E-Mail → mailto:zdaiot@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i> E-Mail</a></span><span class="links-of-author-item"><a href="https://www.zhihu.com/people/" title="知乎 → https://www.zhihu.com/people/" rel="noopener" target="_blank"><i class="fa fa-book fa-fw"></i> 知乎</a></span><span class="links-of-author-item"><a href="https://blog.csdn.net/zdaiot" title="CSDN → https://blog.csdn.net/zdaiot" rel="noopener" target="_blank"><i class="fa fa-copyright fa-fw"></i> CSDN</a></span></div></div><div class="back-to-top motion-element"><i class="fa fa-arrow-up"></i> <span>0%</span></div></div></aside><div id="sidebar-dimmer"></div></div></main><footer class="footer"><div class="footer-inner"><div class="beian"><a href="https://beian.miit.gov.cn" rel="noopener" target="_blank">陕ICP备19018820号</a></div><div class="copyright"> &copy; <span itemprop="copyrightYear">2021</span><span class="with-love"><i class="fa fa-heart"></i></span> <span class="author" itemprop="copyrightHolder">zdaiot</span> <span class="post-meta-divider">|</span><span class="post-meta-item-icon"><i class="fa fa-chart-area"></i></span> <span title="站点总字数">2m</span> <span class="post-meta-divider">|</span><span class="post-meta-item-icon"><i class="fa fa-coffee"></i></span> <span title="站点阅读时长">30:05</span></div><div class="addthis_inline_share_toolbox"><script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5b5e7e498f94b7ad" async="async"></script></div> <span id="timeDate">载入天数...</span><span id="times">载入时分秒...</span><script>var now=new Date;function createtime(){var n=new Date("08/01/2018 00:00:00");now.setTime(now.getTime()+250),days=(now-n)/1e3/60/60/24,dnum=Math.floor(days),hours=(now-n)/1e3/60/60-24*dnum,hnum=Math.floor(hours),1==String(hnum).length&&(hnum="0"+hnum),minutes=(now-n)/1e3/60-1440*dnum-60*hnum,mnum=Math.floor(minutes),1==String(mnum).length&&(mnum="0"+mnum),seconds=(now-n)/1e3-86400*dnum-3600*hnum-60*mnum,snum=Math.round(seconds),1==String(snum).length&&(snum="0"+snum),document.getElementById("timeDate").innerHTML="Run for "+dnum+" Days ",document.getElementById("times").innerHTML=hnum+" Hours "+mnum+" m "+snum+" s"}setInterval("createtime()",250)</script><div class="busuanzi-count"><script data-pjax async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><span class="post-meta-item" id="busuanzi_container_site_uv" style="display:none"><span class="post-meta-item-icon"><i class="user"></i></span><span class="site-uv" title="总访客量"><span id="busuanzi_value_site_uv"></span></span></span> <span class="post-meta-divider">|</span><span class="post-meta-item" id="busuanzi_container_site_pv" style="display:none"><span class="post-meta-item-icon"><i class="eye"></i></span><span class="site-pv" title="总访问量"><span id="busuanzi_value_site_pv"></span></span></span></div></div></footer></div><script src="/lib/anime.min.js"></script><script src="//cdn.jsdelivr.net/gh/theme-next/theme-next-pjax@0/pjax.min.js"></script><script src="/lib/velocity/velocity.min.js"></script><script src="/lib/velocity/velocity.ui.min.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/pisces.js"></script><script src="/js/next-boot.js"></script><script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script><script data-pjax>!function(){var o,n,e=document.getElementsByTagName("link");if(0<e.length)for(i=0;i<e.length;i++)"canonical"==e[i].rel.toLowerCase()&&e[i].href&&(o=e[i].href);n=o?o.split(":")[0]:window.location.protocol.split(":")[0],o||(o=window.location.href),function(){var e=o,i=document.referrer;if(!/([http|https]:\/\/[a-zA-Z0-9\_\.]+\.baidu\.com)/gi.test(e)){var t="https"===String(n).toLowerCase()?"https://sp0.baidu.com/9_Q4simg2RQJ8t7jm9iCKT-xh_/s.gif":"//api.share.baidu.com/s.gif";i?(t+="?r="+encodeURIComponent(document.referrer),e&&(t+="&l="+e)):e&&(t+="?l="+e),(new Image).src=t}}(window)}()</script><script src="/js/local-search.js"></script><div id="pjax"><script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script><link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css"><script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '4800250e682fe873198b',
+      clientSecret: '80f7f33f5f8ddfd3944f455cabadda4ff3299147',
+      repo        : 'zdaiot.github.io',
+      owner       : 'zdaiot',
+      admin       : ['zdaiot'],
+      id          : '2ab08c78c43e52627a5a11ef341471cb',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({pluginRootPath:"live2dw/",pluginJsPath:"lib/",pluginModelPath:"assets/",tagMode:!1,log:!1,model:{jsonPath:"/live2dw/assets/wanko.model.json"},display:{position:"left",width:150,height:300},mobile:{show:!0}})</script></body></html>

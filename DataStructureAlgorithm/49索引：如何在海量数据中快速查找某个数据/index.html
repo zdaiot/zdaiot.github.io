@@ -1,0 +1,142 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=2"><meta name="theme-color" content="#222"><meta name="generator" content="Hexo 3.9.0"><link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png"><link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png"><link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png"><link rel="mask-icon" href="/images/logo.svg" color="#222"><link rel="stylesheet" href="/css/main.css"><link rel="stylesheet" href="/lib/font-awesome/css/all.min.css"><script id="hexo-configurations">var NexT=window.NexT||{},CONFIG={hostname:"www.zdaiot.com",root:"/",scheme:"Gemini",version:"7.8.0",exturl:!1,sidebar:{position:"left",display:"post",offset:12,onmobile:!1},copycode:{enable:!0,show_result:!0,style:null},back2top:{enable:!0,sidebar:!0,scrollpercent:!0},bookmark:{enable:!1,color:"#222",save:"auto"},fancybox:!1,mediumzoom:!1,lazyload:!1,pangu:!1,comments:{style:"tabs",active:null,storage:!0,nav:null},algolia:{hits:{per_page:10},labels:{input_placeholder:"Search for Posts",hits_empty:"We didn't find any results for the search: ${query}",hits_stats:"${hits} results found in ${time} ms"}},localsearch:{enable:!0,trigger:"auto",top_n_per_article:1,unescape:!1,preload:!1},motion:{enable:!0,async:!1,transition:{post_block:"fadeIn",post_header:"slideDownIn",post_body:"slideDownIn",coll_header:"slideLeftIn",sidebar:"slideUpIn"}},path:"search.xml"}</script><meta name="description" content="首先，该文章来自于极客时间网站，王争的专栏——《数据结构与算法之美》，我这里只是做简单的解释、记录并添加自己的见解，只是作为个人笔记，若侵权，马上删除。最后建议直接去该网站上购买该课程看原作者的讲解，一来是支持作者，二来是作者写的确实不错。 之前讲过，MySQL底层使用的是B+树这种数据结构，实现数据库索引的。那么类似 Redis 这样的 Key-Value 数据库中的索引，又是怎么实现的呢？底层"><meta name="keywords" content="索引"><meta property="og:type" content="article"><meta property="og:title" content="49索引：如何在海量数据中快速查找某个数据"><meta property="og:url" content="https://www.zdaiot.com/DataStructureAlgorithm/49索引：如何在海量数据中快速查找某个数据/index.html"><meta property="og:site_name" content="zdaiot"><meta property="og:description" content="首先，该文章来自于极客时间网站，王争的专栏——《数据结构与算法之美》，我这里只是做简单的解释、记录并添加自己的见解，只是作为个人笔记，若侵权，马上删除。最后建议直接去该网站上购买该课程看原作者的讲解，一来是支持作者，二来是作者写的确实不错。 之前讲过，MySQL底层使用的是B+树这种数据结构，实现数据库索引的。那么类似 Redis 这样的 Key-Value 数据库中的索引，又是怎么实现的呢？底层"><meta property="og:locale" content="zh-CN"><meta property="og:updated_time" content="2020-02-17T03:12:10.000Z"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="49索引：如何在海量数据中快速查找某个数据"><meta name="twitter:description" content="首先，该文章来自于极客时间网站，王争的专栏——《数据结构与算法之美》，我这里只是做简单的解释、记录并添加自己的见解，只是作为个人笔记，若侵权，马上删除。最后建议直接去该网站上购买该课程看原作者的讲解，一来是支持作者，二来是作者写的确实不错。 之前讲过，MySQL底层使用的是B+树这种数据结构，实现数据库索引的。那么类似 Redis 这样的 Key-Value 数据库中的索引，又是怎么实现的呢？底层"><link rel="canonical" href="https://www.zdaiot.com/DataStructureAlgorithm/49索引：如何在海量数据中快速查找某个数据/"><script id="page-configurations">CONFIG.page={sidebar:"",isHome:!1,isPost:!0,lang:"zh-CN"}</script><title>49索引：如何在海量数据中快速查找某个数据 | zdaiot</title><script data-pjax>var _hmt=_hmt||[];!function(){var e=document.createElement("script");e.src="https://hm.baidu.com/hm.js?0b0b58037319da4959d5a3c014160ccd";var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t)}()</script><noscript><style>.sidebar-inner,.use-motion .brand,.use-motion .collection-header,.use-motion .comments,.use-motion .menu-item,.use-motion .pagination,.use-motion .post-block,.use-motion .post-body,.use-motion .post-header{opacity:initial}.use-motion .site-subtitle,.use-motion .site-title{opacity:initial;top:initial}.use-motion .logo-line-before i{left:initial}.use-motion .logo-line-after i{right:initial}</style></noscript></head><body itemscope itemtype="http://schema.org/WebPage"><div class="container use-motion"><div class="headband"></div><header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="header-inner"><div class="site-brand-container"><div class="site-nav-toggle"><div class="toggle" aria-label="切换导航栏"><span class="toggle-line toggle-line-first"></span><span class="toggle-line toggle-line-middle"></span><span class="toggle-line toggle-line-last"></span></div></div><div class="site-meta"><a href="/" class="brand" rel="start"><span class="logo-line-before"><i></i></span><h1 class="site-title">zdaiot</h1><span class="logo-line-after"><i></i></span></a><p class="site-subtitle" itemprop="description">404NotFound</p></div><div class="site-nav-right"><div class="toggle popup-trigger"><i class="fa fa-search fa-fw fa-lg"></i></div></div></div><nav class="site-nav"><ul id="menu" class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i> 首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i> 关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i> 标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i> 分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i> 归档</a></li><li class="menu-item menu-item-search"><a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i> 搜索</a></li></ul></nav><div class="search-pop-overlay"><div class="popup search-popup"><div class="search-header"><span class="search-icon"><i class="fa fa-search"></i></span><div class="search-input-container"> <input autocomplete="off" autocapitalize="off" placeholder="搜索..." spellcheck="false" type="search" class="search-input"></div><span class="popup-btn-close"><i class="fa fa-times-circle"></i></span></div><div id="search-result"><div id="no-result"><i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i></div></div></div></div></div></header><main class="main"><div class="main-inner"><div class="content-wrap"><div class="content post posts-expand"><article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN"><link itemprop="mainEntityOfPage" href="https://www.zdaiot.com/DataStructureAlgorithm/49索引：如何在海量数据中快速查找某个数据/"><span hidden itemprop="author" itemscope itemtype="http://schema.org/Person"><meta itemprop="image" content="/uploads/avatar.png"><meta itemprop="name" content="zdaiot"><meta itemprop="description" content="404NotFound"></span><span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization"><meta itemprop="name" content="zdaiot"></span><header class="post-header"><h1 class="post-title" itemprop="name headline"> 49索引：如何在海量数据中快速查找某个数据<a href="https://github.com/zdaiot/zdaiot.github.io/tree/hexo/source/_posts/DataStructureAlgorithm/49索引：如何在海量数据中快速查找某个数据.md" class="post-edit-link" title="编辑" rel="noopener" target="_blank"><i class="fa fa-pencil-alt"></i></a></h1><div class="post-meta"><span class="post-meta-item"><span class="post-meta-item-icon"><i class="far fa-calendar"></i></span> <span class="post-meta-item-text">发表于</span> <time title="创建时间：2020-02-17 11:12:10" itemprop="dateCreated datePublished" datetime="2020-02-17T11:12:10+08:00">2020-02-17</time></span><span class="post-meta-item"><span class="post-meta-item-icon"><i class="far fa-folder"></i></span> <span class="post-meta-item-text">分类于</span> <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/DataStructureAlgorithm/" itemprop="url" rel="index"><span itemprop="name">DataStructureAlgorithm</span></a></span></span><span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display:none"><span class="post-meta-item-icon"><i class="eye"></i></span> <span class="post-meta-item-text">阅读次数：</span><span id="busuanzi_value_page_pv"></span></span><br><span class="post-meta-item" title="本文字数"><span class="post-meta-item-icon"><i class="far fa-file-word"></i></span> <span class="post-meta-item-text">本文字数：</span> <span>2.4k</span></span><span class="post-meta-item" title="阅读时长"><span class="post-meta-item-icon"><i class="far fa-clock"></i></span> <span class="post-meta-item-text">阅读时长 &asymp;</span> <span>2 分钟</span></span></div></header><div class="post-body" itemprop="articleBody"><p>首先，该文章来自于极客时间网站，王争的专栏——《数据结构与算法之美》，我这里只是做简单的解释、记录并添加自己的见解，只是作为个人笔记，若侵权，马上删除。最后建议直接去该网站上购买该课程看原作者的讲解，一来是支持作者，二来是作者写的确实不错。</p><p>之前讲过，MySQL底层使用的是B+树这种数据结构，实现数据库索引的。那么类似 Redis 这样的 Key-Value 数据库中的索引，又是怎么实现的呢？底层依赖的又是什么数据结构呢？</p><p>本节讲述一下索引这种常用的技术解决思路，底层往往会依赖哪些数据结构。</p><h2 id="为什么需要索引？"><a href="#为什么需要索引？" class="headerlink" title="为什么需要索引？"></a>为什么需要索引？</h2><p>实际开发中，众多复杂的业务和功能的外壳，本质都可以抽象成“<strong>对数据的存储和计算</strong>”。对应到数据结构和算法中，那“存储”需要的就是数据结构，“计算”需要的就是算法。</p><p><strong>对于存储的需求，功能上无外乎增删改查。</strong>这其实并不复杂，但是一旦存储的数据很多，那<strong>性能</strong>（存储性能、功能性能）就成了这些系统要关注的重点，特别是在一些跟存储相关的基础系统（比如 MySQL 数据库、分布式文件系统等）、中间件（比如消息中间件 RocketMQ 等）中。</p><p><strong>“如何节省存储空间、如何提高数据增删改查的执行效率”</strong>，就成了设计的重点。而<strong>这些系统的实现，都离不开一个东西，那就是索引。</strong>不夸张地说，<strong>索引设计得好坏，直接决定了这些系统是否优秀。</strong></p><h2 id="索引的需求定义"><a href="#索引的需求定义" class="headerlink" title="索引的需求定义"></a>索引的需求定义</h2><p>要想设计一个系统，首先要搞明白其需求定义，一般从<strong>功能性需求</strong>和<strong>非功能性需求</strong>两方面来分析。</p><h3 id="功能性需求"><a href="#功能性需求" class="headerlink" title="功能性需求"></a>功能性需求</h3><p>对于功能性需求需要考虑如下几点：</p><p><strong>数据是格式化数据还是非格式化数据？</strong>要构建索引的原始数据，类型有很多。可以分为两类，一类是结构化数据，比如，MySQL 中的数据；另一类是非结构化数据，比如搜索引擎中网页。<strong>对于非结构化数据，一般需要做预处理，提取出查询关键词，对关键词构建索引。</strong></p><p><strong>数据是静态数据还是动态数据？</strong>若原始数据是一组静态数据，不会有数据的增删改操作，所以构建索引时只需要考虑查询的效率即可。不过，对于大部分情况要对动态数据构建索引，不仅要考虑到索引的查询效率，在原始数据更新的同时，还需要动态地更新索引。</p><p><strong>索引存储在内存还是硬盘？</strong>索引存储在内存中，查询速度肯定比存储在硬盘上。但是若数据量很大，需要不得不把索引存储在硬盘中。除此之外，还有第三种情况，一部分存储在内存，一部分存储在磁盘，这样就可以兼顾内存消耗和查询效率。</p><p><strong>单值查找还是区间查找？</strong>所谓单值查找，就是查询关键词等于某个值的数据。所谓区间查找，就是查找关键词处于某个区间值的所有数据。</p><p><strong>单关键词查找还是多关键词组合查找？</strong>对于单关键词的查找，索引构建起来相对简单些。对于多关键词查询来说，要分多种情况。像 MySQL 这种结构化数据的查询需求，可以实现针对多个关键词的组合，建立索引；对于像搜索引擎这样的非结构数据的查询需求，可以针对单个关键词构建索引，然后通过集合操作，比如求并集、求交集等，计算出多个关键词组合的查询结果。</p><h3 id="非功能性需求"><a href="#非功能性需求" class="headerlink" title="非功能性需求"></a>非功能性需求</h3><p><strong>不管是存储在内存中还是磁盘中，索引对存储空间的消耗不能过大。</strong>如果存储在内存中，索引对占用存储空间的限制就会非常苛刻。对于存储在硬盘中的索引，同样要注意，有时候索引对存储空间的消耗会超过原始数据。</p><p><strong>在考虑索引查询效率的同时，还要考虑索引的维护成本。</strong>索引的目的是提高查询效率，但是，基于动态数据集合构建的索引，还要考虑到索引的维护成本。因为在原始数据动态增删改的同时，也需要动态的更新索引。而索引的更新势必会影响到增删改操作的性能。</p><h2 id="构建索引常用的数据结构有哪些？"><a href="#构建索引常用的数据结构有哪些？" class="headerlink" title="构建索引常用的数据结构有哪些？"></a>构建索引常用的数据结构有哪些？</h2><p>下面看看对于不同需求的索引结构，底层一般使用哪种数据结构？</p><p>实际上，常用来构建索引的数据结构，就是之前讲过的几种<strong>支持动态数据集合的数据结构</strong>。比如，散列表、红黑树、跳表、B+ 树。除此之外，位图、布隆过滤器可以作为辅助索引，有序数组可以用来对静态数据构建索引。</p><p><strong>散列表</strong>增删改查操作的性能非常好，时间复杂度是 O(1)。一些<strong>键值数据库</strong>，比如 Redis、Memcache，就是使用散列表来构建索引的。这类索引，一般都构建在内存中。</p><p><strong>红黑树</strong>作为一种常用的平衡二叉查找树，数据插入、删除、查找的时间复杂度是 $O(logn)$，也非常适合用来构建内存索引。Ext 文件系统中，对磁盘块的索引，用的就是红黑树。</p><p><strong>B+ 树</strong>比起红黑树来说，更加适合构建存储在磁盘中的索引。B+ 树是一个<strong>多叉树</strong>，所以对相同个数的数据构建索引，<strong>B+ 树的高度要低于红黑树</strong>。当借助索引查询数据的时候，读取 B+ 树索引，需要的磁盘 IO 次数会更少。所以，<strong>大部分关系型数据库</strong>的索引，比如 MySQL、Oracle，都是用 B+ 树来实现的。</p><p><strong>跳表</strong>也支持快速添加、删除、查找数据。而且，通过灵活调整索引结点个数和数据个数之间的比例，可以很好地平衡索引对内存的消耗及其查询效率。Redis 中的有序集合，就是用跳表来构建的。</p><p>除了散列表、红黑树、B+ 树、跳表之外，位图和布隆过滤器这两个数据结构，也可以用于索引中，辅助存储在磁盘中的索引，加速数据查找的效率。具体是怎么做的？</p><p><strong>布隆过滤器</strong>有一定的判错率：对于判定存在的数据，有可能并不存在，但是对于判定不存在的数据，那肯定就不存在。而且，布隆过滤器还有一个更大的特点：内存占用非常少。所以可以针对数据，构建一个布隆过滤器，并且存储在<strong>内存中</strong>。当要查询数据时，可以先通过布隆过滤器，判定是否存在。如果通过布隆过滤器判定数据不存在，就没有必要读取磁盘中的索引了。对于数据不存在的情况，数据查询就更加快速了。</p><p>实际上，有序数组也可以被作为索引。如果数据是静态的，也就是不会有插入、删除、更新操作，那可以把数据的关键词（查询用的）抽取出来，组织成有序数组，然后利用二分查找算法来快速查找数据。</p><h2 id="总结引申"><a href="#总结引申" class="headerlink" title="总结引申"></a>总结引申</h2><p>本节从索引这个非常常用的技术方案，展示了散列表、红黑树、跳表、位图、布隆过滤器、有序数组这些数据结构的应用场景。</p></div><div><div style="text-align:center;color:#ccc;font-size:14px">------ 本文结束------</div></div><div class="reward-container"><div>坚持原创技术分享，您的支持将鼓励我继续创作！</div> <button onclick='var qr=document.getElementById("qr");qr.style.display="none"===qr.style.display?"block":"none"'> 打赏</button><div id="qr" style="display:none"><div style="display:inline-block"> <img src="/uploads/wechat.png" alt="zdaiot 微信支付"><p>微信支付</p></div><div style="display:inline-block"> <img src="/uploads/aipay.jpg" alt="zdaiot 支付宝"><p>支付宝</p></div></div></div><div><ul class="post-copyright"><li class="post-copyright-author"> <strong>本文作者：</strong> zdaiot</li><li class="post-copyright-link"> <strong>本文链接：</strong> <a href="https://www.zdaiot.com/DataStructureAlgorithm/49索引：如何在海量数据中快速查找某个数据/" title="49索引：如何在海量数据中快速查找某个数据">https://www.zdaiot.com/DataStructureAlgorithm/49索引：如何在海量数据中快速查找某个数据/</a></li><li class="post-copyright-license"> <strong>版权声明：</strong> 本博客所有文章除特别声明外，均采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i> BY-NC-SA</a> 许可协议。转载请注明出处！</li></ul></div><div class="followme"><p>欢迎关注我的其它发布渠道</p><div class="social-list"><div class="social-item"><a target="_blank" class="social-link" href="/uploads/wechat-qcode.jpg"><span class="icon"><i class="fab fa-weixin"></i></span> <span class="label">WeChat</span></a></div></div></div><footer class="post-footer"><div class="post-tags"><a href="/tags/索引/" rel="tag"><i class="fa fa-tag"></i> 索引</a></div><div class="post-nav"><div class="post-nav-item"><a href="/DataStructureAlgorithm/48搜索：如何用A星搜索算法实现游戏中的寻路功能/" rel="prev" title="48搜索：如何用A星搜索算法实现游戏中的寻路功能"><i class="fa fa-chevron-left"></i> 48搜索：如何用A星搜索算法实现游戏中的寻路功能</a></div><div class="post-nav-item"> <a href="/DataStructureAlgorithm/50并行算法：如何利用并行处理提高算法的执行效率/" rel="next" title="50并行算法：如何利用并行处理提高算法的执行效率">50并行算法：如何利用并行处理提高算法的执行效率<i class="fa fa-chevron-right"></i></a></div></div></footer></article></div><div class="comments" id="gitalk-container"></div><script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script></div><div class="toggle sidebar-toggle"><span class="toggle-line toggle-line-first"></span><span class="toggle-line toggle-line-middle"></span><span class="toggle-line toggle-line-last"></span></div><aside class="sidebar"><div class="sidebar-inner"><ul class="sidebar-nav motion-element"><li class="sidebar-nav-toc"> 文章目录</li><li class="sidebar-nav-overview"> 站点概览</li></ul><div class="post-toc-wrap sidebar-panel"><div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么需要索引？"><span class="nav-number">1.</span> <span class="nav-text">为什么需要索引？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#索引的需求定义"><span class="nav-number">2.</span> <span class="nav-text">索引的需求定义</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#功能性需求"><span class="nav-number">2.1.</span> <span class="nav-text">功能性需求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#非功能性需求"><span class="nav-number">2.2.</span> <span class="nav-text">非功能性需求</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#构建索引常用的数据结构有哪些？"><span class="nav-number">3.</span> <span class="nav-text">构建索引常用的数据结构有哪些？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结引申"><span class="nav-number">4.</span> <span class="nav-text">总结引申</span></a></li></ol></div></div><div class="site-overview-wrap sidebar-panel"><div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person"> <img class="site-author-image" itemprop="image" alt="zdaiot" src="/uploads/avatar.png"><p class="site-author-name" itemprop="name">zdaiot</p><div class="site-description" itemprop="description">404NotFound</div></div><div class="site-state-wrap motion-element"><nav class="site-state"><div class="site-state-item site-state-posts"> <a href="/archives/"><span class="site-state-item-count">305</span> <span class="site-state-item-name">日志</span></a></div><div class="site-state-item site-state-categories"> <a href="/categories/"><span class="site-state-item-count">52</span> <span class="site-state-item-name">分类</span></a></div><div class="site-state-item site-state-tags"> <a href="/tags/"><span class="site-state-item-count">364</span> <span class="site-state-item-name">标签</span></a></div></nav></div><div class="links-of-author motion-element"><span class="links-of-author-item"><a href="https://github.com/zdaiot" title="GitHub → https://github.com/zdaiot" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i> GitHub</a></span><span class="links-of-author-item"><a href="mailto:zdaiot@163.com" title="E-Mail → mailto:zdaiot@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i> E-Mail</a></span><span class="links-of-author-item"><a href="https://www.zhihu.com/people/" title="知乎 → https://www.zhihu.com/people/" rel="noopener" target="_blank"><i class="fa fa-book fa-fw"></i> 知乎</a></span><span class="links-of-author-item"><a href="https://blog.csdn.net/zdaiot" title="CSDN → https://blog.csdn.net/zdaiot" rel="noopener" target="_blank"><i class="fa fa-copyright fa-fw"></i> CSDN</a></span></div></div><div class="back-to-top motion-element"><i class="fa fa-arrow-up"></i> <span>0%</span></div></div></aside><div id="sidebar-dimmer"></div></div></main><footer class="footer"><div class="footer-inner"><div class="beian"><a href="https://beian.miit.gov.cn" rel="noopener" target="_blank">陕ICP备19018820号</a></div><div class="copyright"> &copy; <span itemprop="copyrightYear">2021</span><span class="with-love"><i class="fa fa-heart"></i></span> <span class="author" itemprop="copyrightHolder">zdaiot</span> <span class="post-meta-divider">|</span><span class="post-meta-item-icon"><i class="fa fa-chart-area"></i></span> <span title="站点总字数">2m</span> <span class="post-meta-divider">|</span><span class="post-meta-item-icon"><i class="fa fa-coffee"></i></span> <span title="站点阅读时长">30:05</span></div><div class="addthis_inline_share_toolbox"><script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5b5e7e498f94b7ad" async="async"></script></div> <span id="timeDate">载入天数...</span><span id="times">载入时分秒...</span><script>var now=new Date;function createtime(){var n=new Date("08/01/2018 00:00:00");now.setTime(now.getTime()+250),days=(now-n)/1e3/60/60/24,dnum=Math.floor(days),hours=(now-n)/1e3/60/60-24*dnum,hnum=Math.floor(hours),1==String(hnum).length&&(hnum="0"+hnum),minutes=(now-n)/1e3/60-1440*dnum-60*hnum,mnum=Math.floor(minutes),1==String(mnum).length&&(mnum="0"+mnum),seconds=(now-n)/1e3-86400*dnum-3600*hnum-60*mnum,snum=Math.round(seconds),1==String(snum).length&&(snum="0"+snum),document.getElementById("timeDate").innerHTML="Run for "+dnum+" Days ",document.getElementById("times").innerHTML=hnum+" Hours "+mnum+" m "+snum+" s"}setInterval("createtime()",250)</script><div class="busuanzi-count"><script data-pjax async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><span class="post-meta-item" id="busuanzi_container_site_uv" style="display:none"><span class="post-meta-item-icon"><i class="user"></i></span><span class="site-uv" title="总访客量"><span id="busuanzi_value_site_uv"></span></span></span> <span class="post-meta-divider">|</span><span class="post-meta-item" id="busuanzi_container_site_pv" style="display:none"><span class="post-meta-item-icon"><i class="eye"></i></span><span class="site-pv" title="总访问量"><span id="busuanzi_value_site_pv"></span></span></span></div></div></footer></div><script src="/lib/anime.min.js"></script><script src="//cdn.jsdelivr.net/gh/theme-next/theme-next-pjax@0/pjax.min.js"></script><script src="/lib/velocity/velocity.min.js"></script><script src="/lib/velocity/velocity.ui.min.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/pisces.js"></script><script src="/js/next-boot.js"></script><script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script><script data-pjax>!function(){var o,n,e=document.getElementsByTagName("link");if(0<e.length)for(i=0;i<e.length;i++)"canonical"==e[i].rel.toLowerCase()&&e[i].href&&(o=e[i].href);n=o?o.split(":")[0]:window.location.protocol.split(":")[0],o||(o=window.location.href),function(){var e=o,i=document.referrer;if(!/([http|https]:\/\/[a-zA-Z0-9\_\.]+\.baidu\.com)/gi.test(e)){var t="https"===String(n).toLowerCase()?"https://sp0.baidu.com/9_Q4simg2RQJ8t7jm9iCKT-xh_/s.gif":"//api.share.baidu.com/s.gif";i?(t+="?r="+encodeURIComponent(document.referrer),e&&(t+="&l="+e)):e&&(t+="?l="+e),(new Image).src=t}}(window)}()</script><script src="/js/local-search.js"></script><div id="pjax"><script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script><link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css"><script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '4800250e682fe873198b',
+      clientSecret: '80f7f33f5f8ddfd3944f455cabadda4ff3299147',
+      repo        : 'zdaiot.github.io',
+      owner       : 'zdaiot',
+      admin       : ['zdaiot'],
+      id          : '46f9f2fa2bb7d16d1d8e268eb7b76094',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({pluginRootPath:"live2dw/",pluginJsPath:"lib/",pluginModelPath:"assets/",tagMode:!1,log:!1,model:{jsonPath:"/live2dw/assets/wanko.model.json"},display:{position:"left",width:150,height:300},mobile:{show:!0}})</script></body></html>

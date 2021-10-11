@@ -1,0 +1,211 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=2"><meta name="theme-color" content="#222"><meta name="generator" content="Hexo 3.9.0"><link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png"><link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png"><link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png"><link rel="mask-icon" href="/images/logo.svg" color="#222"><link rel="stylesheet" href="/css/main.css"><link rel="stylesheet" href="/lib/font-awesome/css/all.min.css"><script id="hexo-configurations">var NexT=window.NexT||{},CONFIG={hostname:"www.zdaiot.com",root:"/",scheme:"Gemini",version:"7.8.0",exturl:!1,sidebar:{position:"left",display:"post",offset:12,onmobile:!1},copycode:{enable:!0,show_result:!0,style:null},back2top:{enable:!0,sidebar:!0,scrollpercent:!0},bookmark:{enable:!1,color:"#222",save:"auto"},fancybox:!1,mediumzoom:!1,lazyload:!1,pangu:!1,comments:{style:"tabs",active:null,storage:!0,nav:null},algolia:{hits:{per_page:10},labels:{input_placeholder:"Search for Posts",hits_empty:"We didn't find any results for the search: ${query}",hits_stats:"${hits} results found in ${time} ms"}},localsearch:{enable:!0,trigger:"auto",top_n_per_article:1,unescape:!1,preload:!1},motion:{enable:!0,async:!1,transition:{post_block:"fadeIn",post_header:"slideDownIn",post_body:"slideDownIn",coll_header:"slideLeftIn",sidebar:"slideUpIn"}},path:"search.xml"}</script><meta name="description" content="最近学到了PCA，看到了斯坦福大学的教程，特翻译了一下，并加上了一些自己的理解。 主成分分析（PCA）是用来提升无监督特征学习速度的数据降维算法。 假设你正在训练图像，因为图像中相邻图片的元素具有很高的相关性，所以数据是冗余的。假设输入是16x16的灰度图片，则$\textstyle x \in \Re^{256}$。因为相邻元素之间有很高的关联性，所以PCA可以在错误率很小的情况下对数据进行降维"><meta name="keywords" content="PCA,降维"><meta property="og:type" content="article"><meta property="og:title" content="PCA"><meta property="og:url" content="https://www.zdaiot.com/MachineLearning/机器学习/PCA/index.html"><meta property="og:site_name" content="zdaiot"><meta property="og:description" content="最近学到了PCA，看到了斯坦福大学的教程，特翻译了一下，并加上了一些自己的理解。 主成分分析（PCA）是用来提升无监督特征学习速度的数据降维算法。 假设你正在训练图像，因为图像中相邻图片的元素具有很高的相关性，所以数据是冗余的。假设输入是16x16的灰度图片，则$\textstyle x \in \Re^{256}$。因为相邻元素之间有很高的关联性，所以PCA可以在错误率很小的情况下对数据进行降维"><meta property="og:locale" content="zh-CN"><meta property="og:image" content="https://www.zdaiot.com/MachineLearning/机器学习/PCA/1541257720716.png"><meta property="og:image" content="https://www.zdaiot.com/MachineLearning/机器学习/PCA/1541258311997.png"><meta property="og:image" content="https://www.zdaiot.com/MachineLearning/机器学习/PCA/1541341014045.png"><meta property="og:image" content="https://www.zdaiot.com/MachineLearning/机器学习/PCA/1541343741057.png"><meta property="og:image" content="https://www.zdaiot.com/MachineLearning/机器学习/PCA/1541345335029.png"><meta property="og:image" content="https://www.zdaiot.com/MachineLearning/机器学习/PCA/1541402944708.png"><meta property="og:image" content="https://www.zdaiot.com/MachineLearning/机器学习/PCA/1541403572081.png"><meta property="og:image" content="https://www.zdaiot.com/MachineLearning/机器学习/PCA/1541406484348.png"><meta property="og:updated_time" content="2019-09-15T03:19:28.000Z"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="PCA"><meta name="twitter:description" content="最近学到了PCA，看到了斯坦福大学的教程，特翻译了一下，并加上了一些自己的理解。 主成分分析（PCA）是用来提升无监督特征学习速度的数据降维算法。 假设你正在训练图像，因为图像中相邻图片的元素具有很高的相关性，所以数据是冗余的。假设输入是16x16的灰度图片，则$\textstyle x \in \Re^{256}$。因为相邻元素之间有很高的关联性，所以PCA可以在错误率很小的情况下对数据进行降维"><meta name="twitter:image" content="https://www.zdaiot.com/MachineLearning/机器学习/PCA/1541257720716.png"><link rel="canonical" href="https://www.zdaiot.com/MachineLearning/机器学习/PCA/"><script id="page-configurations">CONFIG.page={sidebar:"",isHome:!1,isPost:!0,lang:"zh-CN"}</script><title>PCA | zdaiot</title><script data-pjax>var _hmt=_hmt||[];!function(){var e=document.createElement("script");e.src="https://hm.baidu.com/hm.js?0b0b58037319da4959d5a3c014160ccd";var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t)}()</script><noscript><style>.sidebar-inner,.use-motion .brand,.use-motion .collection-header,.use-motion .comments,.use-motion .menu-item,.use-motion .pagination,.use-motion .post-block,.use-motion .post-body,.use-motion .post-header{opacity:initial}.use-motion .site-subtitle,.use-motion .site-title{opacity:initial;top:initial}.use-motion .logo-line-before i{left:initial}.use-motion .logo-line-after i{right:initial}</style></noscript></head><body itemscope itemtype="http://schema.org/WebPage"><div class="container use-motion"><div class="headband"></div><header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="header-inner"><div class="site-brand-container"><div class="site-nav-toggle"><div class="toggle" aria-label="切换导航栏"><span class="toggle-line toggle-line-first"></span><span class="toggle-line toggle-line-middle"></span><span class="toggle-line toggle-line-last"></span></div></div><div class="site-meta"><a href="/" class="brand" rel="start"><span class="logo-line-before"><i></i></span><h1 class="site-title">zdaiot</h1><span class="logo-line-after"><i></i></span></a><p class="site-subtitle" itemprop="description">404NotFound</p></div><div class="site-nav-right"><div class="toggle popup-trigger"><i class="fa fa-search fa-fw fa-lg"></i></div></div></div><nav class="site-nav"><ul id="menu" class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i> 首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i> 关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i> 标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i> 分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i> 归档</a></li><li class="menu-item menu-item-search"><a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i> 搜索</a></li></ul></nav><div class="search-pop-overlay"><div class="popup search-popup"><div class="search-header"><span class="search-icon"><i class="fa fa-search"></i></span><div class="search-input-container"> <input autocomplete="off" autocapitalize="off" placeholder="搜索..." spellcheck="false" type="search" class="search-input"></div><span class="popup-btn-close"><i class="fa fa-times-circle"></i></span></div><div id="search-result"><div id="no-result"><i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i></div></div></div></div></div></header><main class="main"><div class="main-inner"><div class="content-wrap"><div class="content post posts-expand"><article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN"><link itemprop="mainEntityOfPage" href="https://www.zdaiot.com/MachineLearning/机器学习/PCA/"><span hidden itemprop="author" itemscope itemtype="http://schema.org/Person"><meta itemprop="image" content="/uploads/avatar.png"><meta itemprop="name" content="zdaiot"><meta itemprop="description" content="404NotFound"></span><span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization"><meta itemprop="name" content="zdaiot"></span><header class="post-header"><h1 class="post-title" itemprop="name headline"> PCA<a href="https://github.com/zdaiot/zdaiot.github.io/tree/hexo/source/_posts/MachineLearning/机器学习/PCA.md" class="post-edit-link" title="编辑" rel="noopener" target="_blank"><i class="fa fa-pencil-alt"></i></a></h1><div class="post-meta"><span class="post-meta-item"><span class="post-meta-item-icon"><i class="far fa-calendar"></i></span> <span class="post-meta-item-text">发表于</span> <time title="创建时间：2018-11-05 17:12:47" itemprop="dateCreated datePublished" datetime="2018-11-05T17:12:47+08:00">2018-11-05</time></span><span class="post-meta-item"><span class="post-meta-item-icon"><i class="far fa-calendar-check"></i></span> <span class="post-meta-item-text">更新于</span> <time title="修改时间：2019-09-15 11:19:28" itemprop="dateModified" datetime="2019-09-15T11:19:28+08:00">2019-09-15</time></span><span class="post-meta-item"><span class="post-meta-item-icon"><i class="far fa-folder"></i></span> <span class="post-meta-item-text">分类于</span> <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/MachineLearning/" itemprop="url" rel="index"><span itemprop="name">MachineLearning</span></a></span> ， <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/MachineLearning/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span></span><span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display:none"><span class="post-meta-item-icon"><i class="eye"></i></span> <span class="post-meta-item-text">阅读次数：</span><span id="busuanzi_value_page_pv"></span></span><br><span class="post-meta-item" title="本文字数"><span class="post-meta-item-icon"><i class="far fa-file-word"></i></span> <span class="post-meta-item-text">本文字数：</span> <span>10k</span></span><span class="post-meta-item" title="阅读时长"><span class="post-meta-item-icon"><i class="far fa-clock"></i></span> <span class="post-meta-item-text">阅读时长 &asymp;</span> <span>9 分钟</span></span></div></header><div class="post-body" itemprop="articleBody"><p>最近学到了PCA，看到了斯坦福大学的<a href="http://ufldl.stanford.edu/tutorial/unsupervised/PCAWhitening/" target="_blank" rel="noopener">教程</a>，特翻译了一下，并加上了一些自己的理解。</p><p>主成分分析（PCA）是用来提升无监督特征学习速度的数据降维算法。</p><p>假设你正在训练图像，因为图像中相邻图片的元素具有很高的相关性，所以数据是冗余的。假设输入是16x16的灰度图片，则$\textstyle x \in \Re^{256}$。因为相邻元素之间有很高的关联性，所以PCA可以在错误率很小的情况下对数据进行降维。</p><h2 id="例子和数学背景"><a href="#例子和数学背景" class="headerlink" title="例子和数学背景"></a>例子和数学背景</h2><p>我们使用$n=2$维度的数据$\textstyle \{x^{(1)}, x^{(2)}, \ldots, x^{(m)}\}$作为输入，则$\textstyle x^{(i)} \in \Re^2$。为了方便解释，我们以二维数据降一维为例（实际应用可能需要把数据从256维降到50维）：</p><p><img src="/MachineLearning/机器学习/PCA/1541257720716.png" style="zoom:67%"></p><blockquote><p>这里的对数据降维指的是降低数据的维度，而不是减少数据的数目。</p></blockquote><p>在上图中数据已经经过<strong>归一化</strong>处理，特征值$x_1$和$x_2$拥有相同的均值(0)和方差。根据坐标的不同将上面数据使用三种颜色表示出来(颜色与算法无关)。PCA找到一个低维空间将数据进行投影。</p><p>通过上图点的可视化，可以发现，$u_1$是数据的主要变化方向，而$u_2$是数据的次要变化方向。</p><p><img src="/MachineLearning/机器学习/PCA/1541258311997.png" style="zoom:67%"></p><p>也就是说，数据在$u_1$方向的变化幅度要大于在$u_2$方向的变化幅度。更正式的找到$u_1$和$u_2$，首先计算下面的矩阵$\textstyle \Sigma$：</p><script type="math/tex;mode=display">
+\begin{align}
+\Sigma = \frac{1}{m} \sum_{i=1}^m (x^{(i)})(x^{(i)})^T. 
+\end{align}</script><p>$x^{i}$为列向量。如果$x$的均值为零，则$\textstyle \Sigma$是$x$的协方差矩阵(这解释了上面的数据为什么要进行归一化)。注意这里的$\textstyle \Sigma$是标准的协方差表示方法，而不是求和$\sum_{i=1}^n i$。</p><blockquote><p>方差是同一类或者说同一维数据的离散性，而协方差则是不同维度数据的相关性，协方差为0说明二者独立不相关，为负就是负相关，为正就是正相关）。协方差的公式为：</p><script type="math/tex;mode=display">
+conv(x,y)=\frac {\sum_{i=1}^m({x_i-\overline{x}})({y_i-\overline{y}})}{m-1}</script></blockquote><p>可以<strong>证明数据变化的主方向$u_1$就是协方差矩阵的主特征向量</strong>(主特征值对应的特征向量为主特征向量，而主特征值是指模最大（如果是实数的话就是绝对值最大）的特征值)，而$u_2$就是次特征向量（原理有兴趣的同学请看<a href="http://cs229.stanford.edu/" target="_blank" rel="noopener">这里</a>）。</p><p>您可以使用标准的数值线性代数软件来查找这些特征向量(参见实现说明)。具体来说，让我们<strong>计算$\textstyle \Sigma$(即协方差矩阵)的特征向量</strong>，并将这些<strong>特征向量叠加在列中</strong>，形成矩阵$U$：</p><script type="math/tex;mode=display">
+\begin{align}
+U = 
+\begin{bmatrix} 
+| & | & & | \\
+u_1 & u_2 & \cdots & u_n \\
+| & | & & | 
+\end{bmatrix}       
+\end{align}</script><p>在上面，<strong>$u_1$是主特征向量，而$u_2$是第二特征向量，等等</strong>。$\textstyle \lambda_1, \lambda_2, \ldots, \lambda_n$对应上面的特征向量。</p><blockquote><p>矩阵特征向量表达式：$Ax=\lambda x$。</p></blockquote><p>我们可以近似利用向量$u_1$和$u_2$来表示数据。具体来说，让$\textstyle x \in \Re^2$做一些训练，然后$\textstyle u_1^Tx$是$x$在向量$u_1$上投影长度。而$\textstyle u_2^Tx$是$x$在向量$u_2$上投影长度。</p><blockquote><p>对协方差矩阵求特征分解求出特征向量也可以用奇异值分解（SVD）来求解，SVD求解出的U即为协方差矩阵的特征向量。U是变换矩阵或投影矩阵，即为上面说的坐标方向，U的每一列就是一个投影方向。另外具体参考内积的几何意义。</p></blockquote><h2 id="旋转数据"><a href="#旋转数据" class="headerlink" title="旋转数据"></a>旋转数据</h2><p>我们将$x$使用$\textstyle (u_1, u_2)$基向量进行表示:</p><script type="math/tex;mode=display">
+\begin{align}
+x_{\rm rot} = U^Tx = \begin{bmatrix} u_1^Tx \\ u_2^Tx \end{bmatrix} 
+\end{align}</script><p>对整个训练样本转换，即对于每一个$i$均有$\textstyle x_{\rm rot}^{(i)} = U^Tx^{(i)}$，画出$\textstyle x_{\rm rot}$的图像</p><p><img src="/MachineLearning/机器学习/PCA/1541341014045.png" style="zoom:67%"></p><p>这是训练集在$u_1,u_2$基上的旋转，在更一般的情况下，$\textstyle U^Tx$是旋转到$u_1,u_2,…,u_n$上的训练集。$U$是一个正交矩阵，即$\textstyle U^TU = UU^T = I$。已知$\textstyle x_{\rm rot}$求$x$，可以使用</p><script type="math/tex;mode=display">
+\begin{align}
+x = U x_{\rm rot} ,
+\end{align}</script><p>因为$\textstyle U x_{\rm rot} = UU^T x = x$。</p><h2 id="数据降维"><a href="#数据降维" class="headerlink" title="数据降维"></a>数据降维</h2><p>我们可以看到，数据变化的主要方向是第一维，即这个旋转的数据中的$\textstyle x_{\rm rot,1}$。如果我们想把数据降到一维，则</p><script type="math/tex;mode=display">
+\begin{align}
+\tilde{x}^{(i)} = x_{\rm rot,1}^{(i)} = u_1^Tx^{(i)} \in \Re.
+\end{align}</script><p>更一般情况下，如果$\textstyle x \in \Re^n$，我们想减少至$k$维，即$\textstyle \tilde{x} \in \Re^k$，其中$k&lt;n$。我们取$\textstyle x_{\rm rot}$的前$k$个部分，这对应于变化的前$k$个方向。</p><p>另外一种PCA的解释为$\textstyle x_{\rm rot}$是一个$n$维向量，前几个元素可能特别大(例如，对于大多数的样本$i$而言，$\textstyle x_{\rm rot,1}^{(i)} = u_1^Tx^{(i)}$取得了相当大的值)。后面的元素可能特别小(例如，$\textstyle x_{\rm rot,2}^{(i)} = u_2^Tx^{(i)}$更有可能是小的)。PCA将$\textstyle x_{\rm rot}$的后面(小的)元素丢弃掉，将他们近似为零向量。具体来说，我们可以除了前$k$个元素，其余均为零元素的$\textstyle x_{\rm rot}$去近似得到$\textstyle \tilde{x}$。公式如下:</p><script type="math/tex;mode=display">
+\begin{align}
+\tilde{x} = 
+\begin{bmatrix} 
+x_{\rm rot,1} \\
+\vdots \\ 
+x_{\rm rot,k} \\
+0 \\ 
+\vdots \\ 
+0 \\ 
+\end{bmatrix}
+\approx 
+\begin{bmatrix} 
+x_{\rm rot,1} \\
+\vdots \\ 
+x_{\rm rot,k} \\
+x_{\rm rot,k+1} \\
+\vdots \\ 
+x_{\rm rot,n} 
+\end{bmatrix}
+= x_{\rm rot} 
+\end{align}</script><p>在我们的例子中，$\textstyle \tilde{x}$的图如下($\textstyle n=2, k=1$)</p><p><img src="/MachineLearning/机器学习/PCA/1541343741057.png" style="zoom:67%"></p><p>上面的$\textstyle \tilde{x}$中的$n-k$个元素均为零，我们可以省略掉零元素，使得$\textstyle \tilde{x}$为$k$维数据。</p><p>这也解释了为什么我们要在$\textstyle u_1, u_2, \ldots, u_n$基向量上表示我们的数据：决定保留哪$k$个元素。通过这些操作，我们可以说保留了前$k$个PCA(主)成分。</p><h2 id="数据的复原"><a href="#数据的复原" class="headerlink" title="数据的复原"></a>数据的复原</h2><p>现在$\textstyle \tilde{x} \in \Re^k$是原始数据$\textstyle x \in \Re^n$的低维、压缩表示。之前，我们说过$\textstyle x = U x_{\rm rot}$。$\textstyle \tilde{x}$是$\textstyle x_{\rm rot}$的一种近似。因为$\textstyle \tilde{x} \in \Re^k$，我们对$\textstyle \tilde{x}$补$n-k$个零得到$\textstyle x_{\rm rot} \in \Re^n$的近似。最后，乘上$U$即可得到$x$的近似。</p><script type="math/tex;mode=display">
+\begin{align}
+\hat{x} = U \begin{bmatrix} \tilde{x}_1 \\ \vdots \\ \tilde{x}_k \\ 0 \\ \vdots \\ 0 \end{bmatrix}  
+= \sum_{i=1}^k u_i \tilde{x}_i. 
+\end{align}</script><blockquote><p>上面$u_1,u_2,…,u_n$是列向量。</p></blockquote><p>上面的$U$来自前面的定义。实际中，我们并不是真的对$\textstyle \tilde{x}$补零再乘以$U$，因为这将导致零乘。实际上，我们只需要用$U$的前$k$<strong>列</strong>乘以$\textstyle \tilde{x} \in \Re^k$。</p><blockquote><p>右乘$\textstyle \tilde{x}$相当于对$U$中各列进行线性组合，系数为$\textstyle \tilde{x}$中各个值。</p></blockquote><p>对于我们的数据，$\textstyle \hat{x}$的示意图如下</p><p><img src="/MachineLearning/机器学习/PCA/1541345335029.png" style="zoom:67%"></p><p>因此，我们可以使用一维去近似我们的原始数据。</p><p>如果你正在训练自动编码器或其他无监督的特征学习算法，你的算法的运行时间将取决于输入的维数。如果使用$\textstyle \tilde{x} \in \Re^k$去代替$x$，然后，你将对低维数据进行训练，因此你的算法可能会运行得更快。对于许多数据集，低维$\textstyle \tilde{x}$表示可以非常好地逼近原始数据，使用PCA这种方法可以显著提高算法的速度，同时引入非常小的逼近误差。</p><h2 id="保留的元素个数"><a href="#保留的元素个数" class="headerlink" title="保留的元素个数"></a>保留的元素个数</h2><p>我们如何决定$k$呢，如果$k$比较大的话，那么数据无法得到很大的压缩，极端情况下若$k=n$，我们就是在使用原始数据(经过了在不同基向量上变换)。若$k$比较小，那么我们可能使用了一个非常糟糕的数据近似值。</p><p>为了决定如何设置$k$，我们通常会查看不同k值的“保留方差百分比”，具体来说，如果$k=n$，那么我们就得到了数据的精确近似值，我们说100%的保留方差。即原始数据的所有变化都被保留。相反，如果$k=0$，那么我们用0向量逼近所有数据，这样方差就保留了0%。</p><p>更普遍，$\textstyle \lambda_1, \lambda_2, \ldots, \lambda_n$是的$\textstyle \Sigma$的特征值(降序排序)，因此$\textstyle \lambda_j$相对应的特征值特征向量$u_j$。</p><p>如果保留$k$个主成分，保留的方差百分比由下式给出：</p><script type="math/tex;mode=display">
+\begin{align}
+\frac{\sum_{j=1}^k \lambda_j}{\sum_{j=1}^n \lambda_j}.
+\end{align}</script><p>在上面的例子中，$\textstyle \lambda_1 = 7.29$而$\textstyle \lambda_2 = 0.69$。因此，通过只保留$k=1$个主成分，我们保留了$7.29/(7.29+0.69)=0.913$，即91.3%的方差。</p><p>对于图像，一种常见的启发式方法是选择$k$，从而保留99%的方差。换句话说，我们选择满足$k$的最小值。</p><script type="math/tex;mode=display">
+\begin{align}
+\frac{\sum_{j=1}^k \lambda_j}{\sum_{j=1}^n \lambda_j} \geq 0.99. 
+\end{align}</script><p>根据应用程序的不同，如果您愿意容忍一些额外的错误，有时也会使用90-98%范围内的值。当你向其他人描述如何应用PCA时，说选择$k$来保留95%的方差也比说保留了120个(或任何其他数量的)分量要容易得多。</p><h2 id="图像上的PCA"><a href="#图像上的PCA" class="headerlink" title="图像上的PCA"></a>图像上的PCA</h2><p>要使PCA正常工作，通常需要每个特性$\textstyle x_1, x_2, \ldots, x_n$具有与其他值类似的值范围(并具有接近于零的平均值)。如果你以前在其他应用程序中使用过PCA，那么你可能会分别对每个特征进行预处理，使其具有零均值和单位方差，方法是分别估计每个特征$\textstyle x_j$的均值和方差。在大多数图像中，不能采用这种预处理方式。更具体的说，假设我们在自然图像上训练我们的算法，那么$\textstyle x_j$是每个像素$j$的值。</p><p>在对自然图像进行训练时，估计每个像素的单独均值和方差没有多大意义，因为图像一部分的统计数据(理论上)应该与其他任何部分相同。</p><blockquote><p>图像的这种性质称为“平稳性”。</p></blockquote><p>具体而言，为了使PCA更好地工作，我们非正式地要求：(i)各特征的均值近似为零；(ii)不同特征之间具有类似的方差。对于自然图像，即使没有方差归一化，(ii)也已经满足，因此我们将不进行任何方差归一化。(如果使用音频数据(例如，光谱图)或文本数据(例如，字包向量)等进行训练，我们通常也不会进行方差归一化。)</p><p>事实上，PCA对数据的缩放是不变的，并且无论输入的缩放大小如何，它都会返回相同的特征向量。更正式地说，如果将每个特征向量$x$乘以某个正数(从而将每个训练样本中的每个特征按相同的比例缩放)，PCA的输出特征向量将不会改变。</p><p>所以，我们不会使用方差规划化，只需对均值进行规范化，确保每一个特征都是零均值。在应用中，我们经常对图像的亮度不感兴趣。例如，在物体回归问题中，图像的总体亮度不会影像物体的位置。更正式，我们对一个图像块的平均强度值不感兴趣。因此我们可以减去这个值，这是归一化的一种形式。</p><p>具体的，如果$\textstyle x^{(i)} \in \Re^{n}$是16x16图像块(n=256)的亮度值(灰度图)，我们可能对每一个图像$\textstyle x^{(i)}$的亮度进行规范化，对于每一个$j$：</p><script type="math/tex;mode=display">
+\mu^{(i)} := \frac{1}{n} \sum_{j=1}^n x^{(i)}_j \\
+x^{(i)}_j := x^{(i)}_j - \mu^{(i)}</script><p>注意对于每个图像$x^(i)$都有两个步骤，并且$\textstyle \mu^{(i)}$是图像$x^(i)$的亮度均值。这与单独估计每个像素$x_j$的平均值是不同的。</p><p>如果你正在对自然图像以外的图像(例如手写字符的图像或以白色背景为中心的单个孤立对象的图像)进行算法训练，则其他类型的规范化可能值得考虑，而最佳选择可能取决于应用场景。但是，在自然图像训练中，使用上述公式中给出的每幅图像的均值归一化方法将是一个合理的缺省值。</p><h2 id="白化"><a href="#白化" class="headerlink" title="白化"></a>白化</h2><p>我们使用PCA降低数据的维数。有一个密切相关的预处理步骤叫白化(也称为球化)。如果我们对图像进行训练，原始输入是有多余的项，因为相邻的像素值高度相关。白化的目标是减少输入的冗余；更正式地说，期望我们的学习算法得到一个训练输入，满足(i)特征之间的相关性较小，(ii)所有特征都具有相同的方差。</p><h2 id="二维的例子"><a href="#二维的例子" class="headerlink" title="二维的例子"></a>二维的例子</h2><p>我们首先使用之前的2D例子描述白化。然后我们将描述如何将平滑与其相结合，以及如何将PCA与其相结合。</p><p>如何使得输入特征之间互相不相关呢？我们计算$\textstyle x_{\rm rot}^{(i)} = U^Tx^{(i)}$时已经实现了这个。把我们之前的图再画出来，$\textstyle x_{\rm rot}$如图所示：</p><p><img src="/MachineLearning/机器学习/PCA/1541402944708.png" style="zoom:67%"></p><p>？？？这个数据的协方差矩阵为：</p><script type="math/tex;mode=display">
+\begin{align}
+\begin{bmatrix}
+7.29 & 0 \\
+0 & 0.69
+\end{bmatrix}.
+\end{align}</script><p>(注：从技术上讲，本节中关于“协方差”的许多陈述只有在数据均值为零的情况下才是正确的。在本节的其余部分，我们将把这一假设视为隐含在我们的声明中。然而，即使数据的均值不完全为零，我们这里给出的直觉仍然成立，因此这不是你应该担心的事情。)</p><p>对角元素为$\textstyle \lambda_1$和$\textstyle \lambda_2$。且非对角线上的元素为零，因此，$\textstyle x_{\rm rot,1}$和$\textstyle x_{\rm rot,2}$是不相关的。满足我们对白化数据的需求之一(即特征之间的相关性较低)。</p><p>为了使我们的每个输入特性具有单位方差，我们可以每个特征$\textstyle x_{\rm rot,i}$除以$\textstyle 1/\sqrt{\lambda_i}$进行调整。具体而言，我们定义白化数据$\textstyle x_{\rm PCAwhite} \in \Re^n$为下面形式：</p><script type="math/tex;mode=display">
+\begin{align}
+x_{\rm PCAwhite,i} = \frac{x_{\rm rot,i} }{\sqrt{\lambda_i}}.   
+\end{align}</script><p>画出$\textstyle x_{\rm PCAwhite}$，我们得到下图</p><p><img src="/MachineLearning/机器学习/PCA/1541403572081.png" style="zoom:67%"></p><p>这个数据的方差现在等于单位阵$\textstyle I$，称$\textstyle x_{\rm PCAwhite}$PCA白化版本：$\textstyle x_{\rm PCAwhite}$的不同元素之间是不相关的并且有单位方差。</p><p>白化与降维相结合。如果你希望数据被白化，并且比原始输入的维数更低，那么您还可以选择只保留$\textstyle x_{\rm PCAwhite}$的前k项。当我们将PCA白化和正则化结合起来时(稍后将介绍)，$\textstyle x_{\rm PCAwhite}$的最后几项无论如何都将接近于零，因此可以安全地丢弃。</p><h2 id="ZCA白化"><a href="#ZCA白化" class="headerlink" title="ZCA白化"></a>ZCA白化</h2><p>最后，事实证明这种让数据具有协方差恒等式$I$的方法并不是唯一的。具体地说，如果$R$是任意正交矩阵，使得$R$满足$\textstyle RR^T = R^TR = I$(如果$R$是旋转/反射矩阵)，那么$\textstyle R \,x_{\rm PCAwhite}$也将具有恒等协方差。</p><p>在ZCA白化中，我们选择$\textstyle R = U$，我们定义</p><script type="math/tex;mode=display">
+\begin{align}
+x_{\rm ZCAwhite} = U x_{\rm PCAwhite}
+\end{align}</script><p>我们画出来$\textstyle x_{\rm ZCAwhite}$，得到下图</p><p><img src="/MachineLearning/机器学习/PCA/1541406484348.png" style="zoom:67%"></p><p>可以看出，在$R$的所有可能选择中，这种旋转使得$\textstyle x_{\rm ZCAwhite}$尽可能接近原始输入数据$x$。</p><p>当使用ZCA白化的时候(不同于PCA白化)，我们通常保留数据所有的维度，不会降低维度。</p><h2 id="正则化"><a href="#正则化" class="headerlink" title="正则化"></a>正则化</h2><p>无论是PCA白化还是ZCA白化，有时一些特征值$\textstyle \lambda_i$接近零。当放缩的时候，我们会除以$\sqrt{\lambda_i}$，会除以一个接近零的值。这可能会导致数据爆炸(取很大的值)，或者在数值上不稳定。因此，在实践中，我们使用少量的正则化来实现这个缩放步骤，并在特征值取平方根和求逆之前向特征值添加一个小的常量$\textstyle \epsilon$：</p><script type="math/tex;mode=display">
+\begin{align}
+x_{\rm PCAwhite,i} = \frac{x_{\rm rot,i} }{\sqrt{\lambda_i + \epsilon}}.
+\end{align}</script><p>当$x$的取值范围在$[-1,1]$之间的时候，可以取$\textstyle \epsilon \approx 10^{-5}$。</p><p>对于图像，在这里添加$\textstyle \epsilon$也有稍微平滑(或低通滤波)输入图像的效果。这也有一个理想的效果，消除由图像中像素布局方式引起的混叠伪影，并可以改进所学习的特性(细节超出了这些注释的范围)。</p><p>ZCA白化是将数据$x$映射到$\textstyle x_{\rm ZCAwhite}$的一种预处理方式。事实证明，这也是生物眼(视网膜)处理图像的粗略模型。具体来说，当你的眼睛感知图像时，你眼睛中大多数相邻的“像素”都会感觉到非常相似的值，因为图像的相邻部分在强度上往往是高度相关的。因此，你的眼睛必须将每个像素分别传输(通过你的视神经)到你的大脑，这是浪费的。相反，你的视网膜执行去关联操作(这是通过视网膜神经元来完成的，这些神经元计算一个被称为“上中心，外环绕声中心，上环绕声”的功能)，这类似于ZCA所做的操作。这将减少输入图像的冗余表示，然后将输入图像传输到您的大脑。</p><h2 id="PCA白化实现"><a href="#PCA白化实现" class="headerlink" title="PCA白化实现"></a>PCA白化实现</h2><p>在这一节中，我们总结了PCA、PCA白化和ZCA白化算法，并描述了如何使用有效的线性代数库来实现它们。</p><p>首先，我们需要确保数据具有(近似)零均值。</p><p>对于自然图像，我们(近似)通过减去每个图像块的平均值来实现这一点。我们通过减去每个图像块的平均值来实现这一点。在Matlab中，我们可以通过使用：<br></p><figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">avg = <span class="built_in">mean</span>(x, <span class="number">1</span>); <span class="comment">% Compute the mean pixel intensity value separately for each patch. </span></span><br><span class="line">x = x - <span class="built_in">repmat</span>(avg, <span class="built_in">size</span>(x, <span class="number">1</span>), <span class="number">1</span>);</span><br></pre></td></tr></table></figure><p></p><p>接着，我们计算$\textstyle \Sigma = \frac{1}{m} \sum_{i=1}^m (x^{(i)})(x^{(i)})^T$，如果您是在Matlab中实现此功能(或者即使您是在C+、Java等语言中实现此功能，但可以访问有效的线性代数库)，则以显式和的形式执行此操作是低效的。相反，我们可以一次性计算出：<br></p><figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sigma = x * x' / <span class="built_in">size</span>(x, <span class="number">2</span>);</span><br></pre></td></tr></table></figure><p></p><p>这里，$x$是一个$nxm$的矩阵，每一列均是一个样本。</p><p>接着，PCA需要计算协方差$\Sigma$的特征向量。可以使用Matlab的<code>eig</code>函数完成此操作。然而，由于$\Sigma$是一个对称的半正定矩阵，使用<code>svd</code>函数在数值上更可靠。<br></p><figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[U,S,V] = svd(sigma);</span><br></pre></td></tr></table></figure><p></p><p>矩阵$U$将包含$\Sigma$的主向量(每列一个特征向量，按主次特征向量排序)，矩阵$S$的对角项将包含相应的特征值(也按递减顺序排序)。矩阵$V$等于矩阵$U$，可以安全的忽略。</p><p>注：svd函数实际上计算矩阵的奇异向量和奇异值，对于对称半正定矩阵的特殊情况，这就是我们在这里所关注的，等于它的特征向量和特征值。(对奇异向量与特征向量的全面讨论超出了本文的讨论范围。)</p><p>最后，计算$x_{rot}$和$\textstyle \tilde{x}$：<br></p><figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">xRot = U' * x; <span class="comment">% rotated version of the data. </span></span><br><span class="line">xTilde = U(:,<span class="number">1</span>:k)' * x; <span class="comment">% reduced dimension representation of the data, </span></span><br><span class="line">                         <span class="comment">% where k is the number of eigenvectors to keep</span></span><br></pre></td></tr></table></figure><p></p><p>这将给出$\textstyle \tilde{x} \in \Re^k$的PCA数据表示。</p><p>顺便说一句，如果$x$是一个$n×m$矩阵，包含了所有的训练数据，那么这是一个向量化实现，上面的表达式同样适用于计算整个训练集的$x_{\rm rot}$和$\tilde{x}$。得到的$x_{\rm rot}$和$\tilde{x}$将有一列对应于每个训练样本。</p><p>计算PCA白化$\textstyle x_{\rm PCAwhite}$，使用<br></p><figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">xPCAwhite = <span class="built_in">diag</span>(<span class="number">1.</span>/<span class="built_in">sqrt</span>(<span class="built_in">diag</span>(S) + epsilon)) * U' * x;</span><br></pre></td></tr></table></figure><p></p><p>$S’s$的对角包含特征值$\textstyle \lambda_i$。这是一种简洁的计算同时对于所有的$i$计算$\textstyle x_{\rm PCAwhite,i} = \frac{x_{\rm rot,i} }{\sqrt{\lambda_i}}$的方法。</p><p>最后，你也可以计算ZCA白化数据$\textstyle x_{\rm ZCAwhite}$：<br></p><figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">xZCAwhite = U * <span class="built_in">diag</span>(<span class="number">1.</span>/<span class="built_in">sqrt</span>(<span class="built_in">diag</span>(S) + epsilon)) * U' * x;</span><br></pre></td></tr></table></figure><p></p></div><div><div style="text-align:center;color:#ccc;font-size:14px">------ 本文结束------</div></div><div class="reward-container"><div>坚持原创技术分享，您的支持将鼓励我继续创作！</div> <button onclick='var qr=document.getElementById("qr");qr.style.display="none"===qr.style.display?"block":"none"'> 打赏</button><div id="qr" style="display:none"><div style="display:inline-block"> <img src="/uploads/wechat.png" alt="zdaiot 微信支付"><p>微信支付</p></div><div style="display:inline-block"> <img src="/uploads/aipay.jpg" alt="zdaiot 支付宝"><p>支付宝</p></div></div></div><div><ul class="post-copyright"><li class="post-copyright-author"> <strong>本文作者：</strong> zdaiot</li><li class="post-copyright-link"> <strong>本文链接：</strong> <a href="https://www.zdaiot.com/MachineLearning/机器学习/PCA/" title="PCA">https://www.zdaiot.com/MachineLearning/机器学习/PCA/</a></li><li class="post-copyright-license"> <strong>版权声明：</strong> 本博客所有文章除特别声明外，均采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i> BY-NC-SA</a> 许可协议。转载请注明出处！</li></ul></div><div class="followme"><p>欢迎关注我的其它发布渠道</p><div class="social-list"><div class="social-item"><a target="_blank" class="social-link" href="/uploads/wechat-qcode.jpg"><span class="icon"><i class="fab fa-weixin"></i></span> <span class="label">WeChat</span></a></div></div></div><footer class="post-footer"><div class="post-tags"><a href="/tags/PCA/" rel="tag"><i class="fa fa-tag"></i> PCA</a><a href="/tags/降维/" rel="tag"><i class="fa fa-tag"></i> 降维</a></div><div class="post-nav"><div class="post-nav-item"><a href="/ImageProcessing/单目摄像头距离估计/" rel="prev" title="单目摄像头距离估计"><i class="fa fa-chevron-left"></i> 单目摄像头距离估计</a></div><div class="post-nav-item"> <a href="/MachineLearning/神经网络/BatchNorm/" rel="next" title="BatchNorm">BatchNorm<i class="fa fa-chevron-right"></i></a></div></div></footer></article></div><div class="comments" id="gitalk-container"></div><script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script></div><div class="toggle sidebar-toggle"><span class="toggle-line toggle-line-first"></span><span class="toggle-line toggle-line-middle"></span><span class="toggle-line toggle-line-last"></span></div><aside class="sidebar"><div class="sidebar-inner"><ul class="sidebar-nav motion-element"><li class="sidebar-nav-toc"> 文章目录</li><li class="sidebar-nav-overview"> 站点概览</li></ul><div class="post-toc-wrap sidebar-panel"><div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#例子和数学背景"><span class="nav-number">1.</span> <span class="nav-text">例子和数学背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#旋转数据"><span class="nav-number">2.</span> <span class="nav-text">旋转数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据降维"><span class="nav-number">3.</span> <span class="nav-text">数据降维</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据的复原"><span class="nav-number">4.</span> <span class="nav-text">数据的复原</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#保留的元素个数"><span class="nav-number">5.</span> <span class="nav-text">保留的元素个数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#图像上的PCA"><span class="nav-number">6.</span> <span class="nav-text">图像上的PCA</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#白化"><span class="nav-number">7.</span> <span class="nav-text">白化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二维的例子"><span class="nav-number">8.</span> <span class="nav-text">二维的例子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ZCA白化"><span class="nav-number">9.</span> <span class="nav-text">ZCA白化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正则化"><span class="nav-number">10.</span> <span class="nav-text">正则化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PCA白化实现"><span class="nav-number">11.</span> <span class="nav-text">PCA白化实现</span></a></li></ol></div></div><div class="site-overview-wrap sidebar-panel"><div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person"> <img class="site-author-image" itemprop="image" alt="zdaiot" src="/uploads/avatar.png"><p class="site-author-name" itemprop="name">zdaiot</p><div class="site-description" itemprop="description">404NotFound</div></div><div class="site-state-wrap motion-element"><nav class="site-state"><div class="site-state-item site-state-posts"> <a href="/archives/"><span class="site-state-item-count">305</span> <span class="site-state-item-name">日志</span></a></div><div class="site-state-item site-state-categories"> <a href="/categories/"><span class="site-state-item-count">52</span> <span class="site-state-item-name">分类</span></a></div><div class="site-state-item site-state-tags"> <a href="/tags/"><span class="site-state-item-count">364</span> <span class="site-state-item-name">标签</span></a></div></nav></div><div class="links-of-author motion-element"><span class="links-of-author-item"><a href="https://github.com/zdaiot" title="GitHub → https://github.com/zdaiot" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i> GitHub</a></span><span class="links-of-author-item"><a href="mailto:zdaiot@163.com" title="E-Mail → mailto:zdaiot@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i> E-Mail</a></span><span class="links-of-author-item"><a href="https://www.zhihu.com/people/" title="知乎 → https://www.zhihu.com/people/" rel="noopener" target="_blank"><i class="fa fa-book fa-fw"></i> 知乎</a></span><span class="links-of-author-item"><a href="https://blog.csdn.net/zdaiot" title="CSDN → https://blog.csdn.net/zdaiot" rel="noopener" target="_blank"><i class="fa fa-copyright fa-fw"></i> CSDN</a></span></div></div><div class="back-to-top motion-element"><i class="fa fa-arrow-up"></i> <span>0%</span></div></div></aside><div id="sidebar-dimmer"></div></div></main><footer class="footer"><div class="footer-inner"><div class="beian"><a href="https://beian.miit.gov.cn" rel="noopener" target="_blank">陕ICP备19018820号</a></div><div class="copyright"> &copy; <span itemprop="copyrightYear">2021</span><span class="with-love"><i class="fa fa-heart"></i></span> <span class="author" itemprop="copyrightHolder">zdaiot</span> <span class="post-meta-divider">|</span><span class="post-meta-item-icon"><i class="fa fa-chart-area"></i></span> <span title="站点总字数">2m</span> <span class="post-meta-divider">|</span><span class="post-meta-item-icon"><i class="fa fa-coffee"></i></span> <span title="站点阅读时长">30:05</span></div><div class="addthis_inline_share_toolbox"><script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5b5e7e498f94b7ad" async="async"></script></div> <span id="timeDate">载入天数...</span><span id="times">载入时分秒...</span><script>var now=new Date;function createtime(){var n=new Date("08/01/2018 00:00:00");now.setTime(now.getTime()+250),days=(now-n)/1e3/60/60/24,dnum=Math.floor(days),hours=(now-n)/1e3/60/60-24*dnum,hnum=Math.floor(hours),1==String(hnum).length&&(hnum="0"+hnum),minutes=(now-n)/1e3/60-1440*dnum-60*hnum,mnum=Math.floor(minutes),1==String(mnum).length&&(mnum="0"+mnum),seconds=(now-n)/1e3-86400*dnum-3600*hnum-60*mnum,snum=Math.round(seconds),1==String(snum).length&&(snum="0"+snum),document.getElementById("timeDate").innerHTML="Run for "+dnum+" Days ",document.getElementById("times").innerHTML=hnum+" Hours "+mnum+" m "+snum+" s"}setInterval("createtime()",250)</script><div class="busuanzi-count"><script data-pjax async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><span class="post-meta-item" id="busuanzi_container_site_uv" style="display:none"><span class="post-meta-item-icon"><i class="user"></i></span><span class="site-uv" title="总访客量"><span id="busuanzi_value_site_uv"></span></span></span> <span class="post-meta-divider">|</span><span class="post-meta-item" id="busuanzi_container_site_pv" style="display:none"><span class="post-meta-item-icon"><i class="eye"></i></span><span class="site-pv" title="总访问量"><span id="busuanzi_value_site_pv"></span></span></span></div></div></footer></div><script src="/lib/anime.min.js"></script><script src="//cdn.jsdelivr.net/gh/theme-next/theme-next-pjax@0/pjax.min.js"></script><script src="/lib/velocity/velocity.min.js"></script><script src="/lib/velocity/velocity.ui.min.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/pisces.js"></script><script src="/js/next-boot.js"></script><script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script><script data-pjax>!function(){var o,n,e=document.getElementsByTagName("link");if(0<e.length)for(i=0;i<e.length;i++)"canonical"==e[i].rel.toLowerCase()&&e[i].href&&(o=e[i].href);n=o?o.split(":")[0]:window.location.protocol.split(":")[0],o||(o=window.location.href),function(){var e=o,i=document.referrer;if(!/([http|https]:\/\/[a-zA-Z0-9\_\.]+\.baidu\.com)/gi.test(e)){var t="https"===String(n).toLowerCase()?"https://sp0.baidu.com/9_Q4simg2RQJ8t7jm9iCKT-xh_/s.gif":"//api.share.baidu.com/s.gif";i?(t+="?r="+encodeURIComponent(document.referrer),e&&(t+="&l="+e)):e&&(t+="?l="+e),(new Image).src=t}}(window)}()</script><script src="/js/local-search.js"></script><div id="pjax"><script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script><link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css"><script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '4800250e682fe873198b',
+      clientSecret: '80f7f33f5f8ddfd3944f455cabadda4ff3299147',
+      repo        : 'zdaiot.github.io',
+      owner       : 'zdaiot',
+      admin       : ['zdaiot'],
+      id          : 'c38ff7779bc1fadb3c1205eb04d78771',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({pluginRootPath:"live2dw/",pluginJsPath:"lib/",pluginModelPath:"assets/",tagMode:!1,log:!1,model:{jsonPath:"/live2dw/assets/wanko.model.json"},display:{position:"left",width:150,height:300},mobile:{show:!0}})</script></body></html>

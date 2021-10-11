@@ -1,0 +1,153 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=2"><meta name="theme-color" content="#222"><meta name="generator" content="Hexo 3.9.0"><link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png"><link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png"><link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png"><link rel="mask-icon" href="/images/logo.svg" color="#222"><link rel="stylesheet" href="/css/main.css"><link rel="stylesheet" href="/lib/font-awesome/css/all.min.css"><script id="hexo-configurations">var NexT=window.NexT||{},CONFIG={hostname:"www.zdaiot.com",root:"/",scheme:"Gemini",version:"7.8.0",exturl:!1,sidebar:{position:"left",display:"post",offset:12,onmobile:!1},copycode:{enable:!0,show_result:!0,style:null},back2top:{enable:!0,sidebar:!0,scrollpercent:!0},bookmark:{enable:!1,color:"#222",save:"auto"},fancybox:!1,mediumzoom:!1,lazyload:!1,pangu:!1,comments:{style:"tabs",active:null,storage:!0,nav:null},algolia:{hits:{per_page:10},labels:{input_placeholder:"Search for Posts",hits_empty:"We didn't find any results for the search: ${query}",hits_stats:"${hits} results found in ${time} ms"}},localsearch:{enable:!0,trigger:"auto",top_n_per_article:1,unescape:!1,preload:!1},motion:{enable:!0,async:!1,transition:{post_block:"fadeIn",post_header:"slideDownIn",post_body:"slideDownIn",coll_header:"slideLeftIn",sidebar:"slideUpIn"}},path:"search.xml"}</script><meta name="description" content="单目定位和双目定位的选择，我觉得主要还是成本和时间的考虑。之前也尝试过双目定位，感觉要更精准些，但双目测距需要对两幅图像进行图像变换和极线匹配，稍微耗时了一些。这几天尝试了一下单摄像头进行测距定位，主要有两个思路：  定位测量插值得到每个像素的实际坐标　　该方法总觉得有很大的问题：一个是摄像头安装后就必须固定不动，稍微的旋转都会导致之间测量的像素点对应的坐标偏移。另一个是人工测量的工程量之大，对于"><meta name="keywords" content="单目测距"><meta property="og:type" content="article"><meta property="og:title" content="单目摄像头距离估计"><meta property="og:url" content="https://www.zdaiot.com/ImageProcessing/单目摄像头距离估计/index.html"><meta property="og:site_name" content="zdaiot"><meta property="og:description" content="单目定位和双目定位的选择，我觉得主要还是成本和时间的考虑。之前也尝试过双目定位，感觉要更精准些，但双目测距需要对两幅图像进行图像变换和极线匹配，稍微耗时了一些。这几天尝试了一下单摄像头进行测距定位，主要有两个思路：  定位测量插值得到每个像素的实际坐标　　该方法总觉得有很大的问题：一个是摄像头安装后就必须固定不动，稍微的旋转都会导致之间测量的像素点对应的坐标偏移。另一个是人工测量的工程量之大，对于"><meta property="og:locale" content="zh-CN"><meta property="og:image" content="https://www.zdaiot.com/ImageProcessing/单目摄像头距离估计/1541317693339.png"><meta property="og:image" content="https://www.zdaiot.com/ImageProcessing/单目摄像头距离估计/1541318103504.png"><meta property="og:image" content="https://www.zdaiot.com/ImageProcessing/单目摄像头距离估计/1541318168923.png"><meta property="og:image" content="https://www.zdaiot.com/ImageProcessing/单目摄像头距离估计/1541319377927.png"><meta property="og:image" content="https://www.zdaiot.com/ImageProcessing/单目摄像头距离估计/1541319562231.png"><meta property="og:updated_time" content="2019-09-15T03:47:13.000Z"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="单目摄像头距离估计"><meta name="twitter:description" content="单目定位和双目定位的选择，我觉得主要还是成本和时间的考虑。之前也尝试过双目定位，感觉要更精准些，但双目测距需要对两幅图像进行图像变换和极线匹配，稍微耗时了一些。这几天尝试了一下单摄像头进行测距定位，主要有两个思路：  定位测量插值得到每个像素的实际坐标　　该方法总觉得有很大的问题：一个是摄像头安装后就必须固定不动，稍微的旋转都会导致之间测量的像素点对应的坐标偏移。另一个是人工测量的工程量之大，对于"><meta name="twitter:image" content="https://www.zdaiot.com/ImageProcessing/单目摄像头距离估计/1541317693339.png"><link rel="canonical" href="https://www.zdaiot.com/ImageProcessing/单目摄像头距离估计/"><script id="page-configurations">CONFIG.page={sidebar:"",isHome:!1,isPost:!0,lang:"zh-CN"}</script><title>单目摄像头距离估计 | zdaiot</title><script data-pjax>var _hmt=_hmt||[];!function(){var e=document.createElement("script");e.src="https://hm.baidu.com/hm.js?0b0b58037319da4959d5a3c014160ccd";var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t)}()</script><noscript><style>.sidebar-inner,.use-motion .brand,.use-motion .collection-header,.use-motion .comments,.use-motion .menu-item,.use-motion .pagination,.use-motion .post-block,.use-motion .post-body,.use-motion .post-header{opacity:initial}.use-motion .site-subtitle,.use-motion .site-title{opacity:initial;top:initial}.use-motion .logo-line-before i{left:initial}.use-motion .logo-line-after i{right:initial}</style></noscript></head><body itemscope itemtype="http://schema.org/WebPage"><div class="container use-motion"><div class="headband"></div><header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="header-inner"><div class="site-brand-container"><div class="site-nav-toggle"><div class="toggle" aria-label="切换导航栏"><span class="toggle-line toggle-line-first"></span><span class="toggle-line toggle-line-middle"></span><span class="toggle-line toggle-line-last"></span></div></div><div class="site-meta"><a href="/" class="brand" rel="start"><span class="logo-line-before"><i></i></span><h1 class="site-title">zdaiot</h1><span class="logo-line-after"><i></i></span></a><p class="site-subtitle" itemprop="description">404NotFound</p></div><div class="site-nav-right"><div class="toggle popup-trigger"><i class="fa fa-search fa-fw fa-lg"></i></div></div></div><nav class="site-nav"><ul id="menu" class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i> 首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i> 关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i> 标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i> 分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i> 归档</a></li><li class="menu-item menu-item-search"><a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i> 搜索</a></li></ul></nav><div class="search-pop-overlay"><div class="popup search-popup"><div class="search-header"><span class="search-icon"><i class="fa fa-search"></i></span><div class="search-input-container"> <input autocomplete="off" autocapitalize="off" placeholder="搜索..." spellcheck="false" type="search" class="search-input"></div><span class="popup-btn-close"><i class="fa fa-times-circle"></i></span></div><div id="search-result"><div id="no-result"><i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i></div></div></div></div></div></header><main class="main"><div class="main-inner"><div class="content-wrap"><div class="content post posts-expand"><article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN"><link itemprop="mainEntityOfPage" href="https://www.zdaiot.com/ImageProcessing/单目摄像头距离估计/"><span hidden itemprop="author" itemscope itemtype="http://schema.org/Person"><meta itemprop="image" content="/uploads/avatar.png"><meta itemprop="name" content="zdaiot"><meta itemprop="description" content="404NotFound"></span><span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization"><meta itemprop="name" content="zdaiot"></span><header class="post-header"><h1 class="post-title" itemprop="name headline"> 单目摄像头距离估计<a href="https://github.com/zdaiot/zdaiot.github.io/tree/hexo/source/_posts/ImageProcessing/单目摄像头距离估计.md" class="post-edit-link" title="编辑" rel="noopener" target="_blank"><i class="fa fa-pencil-alt"></i></a></h1><div class="post-meta"><span class="post-meta-item"><span class="post-meta-item-icon"><i class="far fa-calendar"></i></span> <span class="post-meta-item-text">发表于</span> <time title="创建时间：2018-11-05 11:37:13" itemprop="dateCreated datePublished" datetime="2018-11-05T11:37:13+08:00">2018-11-05</time></span><span class="post-meta-item"><span class="post-meta-item-icon"><i class="far fa-calendar-check"></i></span> <span class="post-meta-item-text">更新于</span> <time title="修改时间：2019-09-15 11:47:13" itemprop="dateModified" datetime="2019-09-15T11:47:13+08:00">2019-09-15</time></span><span class="post-meta-item"><span class="post-meta-item-icon"><i class="far fa-folder"></i></span> <span class="post-meta-item-text">分类于</span> <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/ImageProcessing/" itemprop="url" rel="index"><span itemprop="name">ImageProcessing</span></a></span></span><span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display:none"><span class="post-meta-item-icon"><i class="eye"></i></span> <span class="post-meta-item-text">阅读次数：</span><span id="busuanzi_value_page_pv"></span></span><br><span class="post-meta-item" title="本文字数"><span class="post-meta-item-icon"><i class="far fa-file-word"></i></span> <span class="post-meta-item-text">本文字数：</span> <span>3.4k</span></span><span class="post-meta-item" title="阅读时长"><span class="post-meta-item-icon"><i class="far fa-clock"></i></span> <span class="post-meta-item-text">阅读时长 &asymp;</span> <span>3 分钟</span></span></div></header><div class="post-body" itemprop="articleBody"><p>单目定位和双目定位的选择，我觉得主要还是成本和时间的考虑。之前也尝试过双目定位，感觉要更精准些，但双目测距需要对两幅图像进行图像变换和极线匹配，稍微耗时了一些。这几天尝试了一下单摄像头进行测距定位，主要有两个思路：</p><h2 id="定位测量插值得到每个像素的实际坐标"><a href="#定位测量插值得到每个像素的实际坐标" class="headerlink" title="定位测量插值得到每个像素的实际坐标　　"></a>定位测量插值得到每个像素的实际坐标　　</h2><p>该方法总觉得有很大的问题：一个是摄像头安装后就必须固定不动，稍微的旋转都会导致之间测量的像素点对应的坐标偏移。另一个是人工测量的工程量之大，对于$1024<em>1280$像素的摄像头，准确的测量就应该是130万个点，而就算我们按米来分割地面，$10</em>20m^2$的地面也要测量200个点，就算可以通过算法自动识别，做200个标志就算测量画线也是令人头疼的。考虑到针孔成像模型的等比例放大，我们通过直接打印布满等距阵列圆点的纸来进行测量。</p><p>其原理如下：</p><p><img src="/ImageProcessing/单目摄像头距离估计/1541317693339.png" alt></p><p>根据相似三角形的等比例关系，有:</p><script type="math/tex;mode=display">\frac{EG}{BD}=\frac{AG}{AD}  \\
+\frac{GF}{DC}=\frac{AG}{AD}</script><p>同时又有：</p><script type="math/tex;mode=display">\frac{EG}{EB}=\frac{AE}{AB}$$　
+
+通过等式传递有：
+
+$$\frac{EG}{BD}=\frac{GF}{DC}=\frac{AE}{AB}</script><p>如此一来，可以在较高距离测量等距阵列点（如标定板），经过插值，再进行等比例放大即可得到每个像素点对应的实际地面的坐标。<br>　　<br>处理的示意图如下：</p><p><img src="/ImageProcessing/单目摄像头距离估计/1541318103504.png" alt></p><p>这样操作可以省去人工在地面测量绘画标志。测量好纸上的点距后再进行H/h的放大就可以得到像素对应实际地面的坐标。但实际操作过程中遇到的问题是图像上边缘的梯形失真过于严重，导致打印纸上的标志点不容易识别，因此还需要准备不同距离的等距阵列圆点图。</p><h2 id="根据相似三角比例计算出对应像素点的实际坐标"><a href="#根据相似三角比例计算出对应像素点的实际坐标" class="headerlink" title="根据相似三角比例计算出对应像素点的实际坐标　　"></a>根据相似三角比例计算出对应像素点的实际坐标　　</h2><p>这个方法对摄像机标定的要求比较高，同时要求镜头本身造成的畸变就比较小，但总体来说这种方法的可移植性和实用性都较强。其主要的思路还是小孔成像的模型。</p><h3 id="模型一：假设测量的点都在Y轴上，此时无X轴分量"><a href="#模型一：假设测量的点都在Y轴上，此时无X轴分量" class="headerlink" title="模型一：假设测量的点都在Y轴上，此时无X轴分量"></a>模型一：假设测量的点都在Y轴上，此时无X轴分量</h3><p><img src="/ImageProcessing/单目摄像头距离估计/1541318168923.png" alt></p><p>该图主要有三个坐标系，分别是图像坐标系$UO_1V$，以$O_2$为原点的摄像机坐标系，世界坐标系$XO_3Y$（相关的内容我就不复述了，不懂的百度和知乎上都有，搜搜相机标定的知识）</p><p>我们可以看到，世界坐标中的点通过光轴成像在图像坐标的点是成比例的，其比例媒介就是相机镜头中心在图像上的像素点$O1$与其在世界坐标中的实际点$M$，通过推导可以求解$O_3P$的长度。（注意，由于相机安装一般都有误差，所以镜头中心点不一定是图像的中点，所以$ucenter，vcenter$不一定为0）　</p><p>一步步推导如下：<br>已知量：</p><ul><li>摄像机高度H</li><li>图像坐标中心对应的世界坐标点与摄像头在y轴上的距离$O_3M$</li><li>镜头中心点的图像坐标$(ucenter，vcenter)$</li><li>测量像素点的图像坐标$P_1(u,0)$　　　　　　</li><li>实际像素的长度$xpix$</li><li>实际像素的宽度$ypix$。</li><li>摄像头焦距$f$</li></ul><blockquote><p> 镜头中心点图像坐标，焦距，像素长宽都可以由标定直接求解出来，通过halcon的标定助手可以很容易的得到，openCV也有相应的程序）</p></blockquote><script type="math/tex;mode=display">{ \alpha = \arctan \left( \frac { H } {O_3M} \right) } \\ 
+{ \gamma = \arctan \left( \frac { O _ { 1 } P _ { 1 } \times y p i x } { f } \right) = \frac { ( v - v c e n t e r ) * y p i x } { f } } \\ 
+{ \beta = \alpha - \gamma } \\
+{ O _ { 3 } P = \frac { H } { \tan ( \beta ) } }</script><p>这样就可以得到垂直方向的坐标：$Y=O_3P$</p><h3 id="模型二：假设测量的点有X轴、Y轴分量"><a href="#模型二：假设测量的点有X轴、Y轴分量" class="headerlink" title="模型二：假设测量的点有X轴、Y轴分量　　"></a>模型二：假设测量的点有X轴、Y轴分量　　</h3><p>针对以下模型图我们将进行说明：</p><p><img src="/ImageProcessing/单目摄像头距离估计/1541319377927.png" alt></p><p>一步步推导如下：<br>已知量：</p><ul><li>摄像机高度H</li><li>图像坐标中心对应的世界坐标点与摄像头在y轴上的距离$O_3M$</li><li>镜头中心点的图像坐标$O_1(ucenter，vcenter)$</li><li>测量像素点的图像坐标$P_1(u,0)、Q_1(u,v)$　　　　　</li><li>实际像素的长度$xpix$</li><li>实际像素的宽度$ypix$</li><li>摄像头焦距$f$</li></ul><blockquote><p>y轴方向计算和上一个模型相同，x轴计算是y轴坐标通过比例计算得到</p></blockquote><script type="math/tex;mode=display">{ \alpha = \arctan \left( \frac { H } {O_3M} \right) } \\ 
+{ \gamma = \arctan \left( \frac { O _ { 1 } P _ { 1 } \times y p i x } { f } \right) = \frac { ( v - v c e n t e r ) * y p i x } { f } } \\ 
+{ \beta = \alpha - \gamma } \\
+{ O _ { 3 } P = \frac { H } { \tan ( \beta ) } }</script><p>这样就可以得到垂直方向的坐标：$Y=O_3P$</p><script type="math/tex;mode=display">{ O _ { 2 } P _ { 1 } = \sqrt { ( v - v c e n t e r ) * x p i x ) ^ { 2 } + f ^ { 2 } } } \\ { O _ { 2 } P = \frac { H } { \sin ( \beta ) } }</script><p>由$\frac { P Q } { P _ { 1 } Q _ { 1 } } = \frac { O _ { 2 } P } { O _ { 2 } P _ { 1 } }$得出$P Q = \frac { O _ { 2 } P \times P _ { 1 } Q _ { 1 } } {O_2P_1}$</p><p>这样就可以得到垂直方向的坐标：$X=PQ$</p><h3 id="模型三：假设测量的点有X轴、Y轴分量，且物体有高度h"><a href="#模型三：假设测量的点有X轴、Y轴分量，且物体有高度h" class="headerlink" title="模型三：假设测量的点有X轴、Y轴分量，且物体有高度h　　　　"></a>模型三：假设测量的点有X轴、Y轴分量，且物体有高度h　　　　</h3><p>针对以下模型图我们将进行说明：</p><p><img src="/ImageProcessing/单目摄像头距离估计/1541319562231.png" alt></p><p>由于物体有高度，因此还需要进行一个投影变换，其实也还是相似变换　<br>　　<br>设真实的坐标$(X′,Y′)$，模型二求出的坐标$(X,Y)$，则</p><script type="math/tex;mode=display">(X′,Y′)=(X,Y)×(1−\frac{h}{H})</script><p>　　</p><h3 id="模型评价"><a href="#模型评价" class="headerlink" title="模型评价　　　　"></a>模型评价　　　　</h3><p>实际操作过程中，发现该模型在畸变较小的图像中误差较小，且在矫正畸变后的图像中测量的图像坐标可以得到更准确的值。另一方面，在实际操作过程中，发现由于镜头有稍微歪曲或者内置感光区域安装歪了，可能导致我们找不到真正的X,Y轴，所以在测量验证的时候会有稍许误差，但即便如此，在10米的定位下，误差也不到5%，效果还是可以接受的。如果有人知道如何找到真正的X,Y轴，请博客留言告知一下，先谢谢了。</p><p><a href="http://download.csdn.net/download/sillykog/10048668" target="_blank" rel="noopener">matlab计算代码下载</a></p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">%%相机参数</span><br><span class="line">H=217.0  % 摄像机高度H </span><br><span class="line">dis=490.0  % 图像坐标中心对应的世界坐标点与摄像头在y轴上的距离O_3M </span><br><span class="line">h=0      % 物体的高度</span><br><span class="line"></span><br><span class="line">v=748.0   % 测量像素点的图像坐标P_1(u，0）、Q_1(u，v)　　</span><br><span class="line">u=648.0</span><br><span class="line">vcenter=707.606 % 镜头中心点的图像坐标O_1(ucenter，vcenter) </span><br><span class="line">ucenter=604.677 </span><br><span class="line">f=1.25649   % 焦距</span><br><span class="line">xpix=0.0008314 % 实际像素的长度xpix </span><br><span class="line">ypix=0.00083 % 实际像素的长度ypix </span><br><span class="line"></span><br><span class="line">%% Y calculation</span><br><span class="line">Alpha=atan(H/dis)</span><br><span class="line">y=(v-vcenter)*ypix </span><br><span class="line">Gama=atan(y/f) </span><br><span class="line">Beta=Alpha-Gama   % 原版代码这里为 + ，应该错了</span><br><span class="line">Y=H/tan(Beta) </span><br><span class="line">%% Scale for depth</span><br><span class="line">Yreal=Y*(1-h/H)</span><br><span class="line"></span><br><span class="line">%% X calculation</span><br><span class="line">OP=H/sin(Beta) </span><br><span class="line">tuple_sqrt(f*f+y*y,Op) % 即Op=sqrt(f*f+y*y)</span><br><span class="line">x=(u-ucenter)*xpix</span><br><span class="line">X=x*OP/Op </span><br><span class="line">%% Scale for depth</span><br><span class="line">Xreal=X*(1-h/H)</span><br></pre></td></tr></table></figure><h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://blog.csdn.net/sillykog/article/details/71214107" target="_blank" rel="noopener">单目视觉定位测距的两种方式</a></p></div><div><div style="text-align:center;color:#ccc;font-size:14px">------ 本文结束------</div></div><div class="reward-container"><div>坚持原创技术分享，您的支持将鼓励我继续创作！</div> <button onclick='var qr=document.getElementById("qr");qr.style.display="none"===qr.style.display?"block":"none"'> 打赏</button><div id="qr" style="display:none"><div style="display:inline-block"> <img src="/uploads/wechat.png" alt="zdaiot 微信支付"><p>微信支付</p></div><div style="display:inline-block"> <img src="/uploads/aipay.jpg" alt="zdaiot 支付宝"><p>支付宝</p></div></div></div><div><ul class="post-copyright"><li class="post-copyright-author"> <strong>本文作者：</strong> zdaiot</li><li class="post-copyright-link"> <strong>本文链接：</strong> <a href="https://www.zdaiot.com/ImageProcessing/单目摄像头距离估计/" title="单目摄像头距离估计">https://www.zdaiot.com/ImageProcessing/单目摄像头距离估计/</a></li><li class="post-copyright-license"> <strong>版权声明：</strong> 本博客所有文章除特别声明外，均采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i> BY-NC-SA</a> 许可协议。转载请注明出处！</li></ul></div><div class="followme"><p>欢迎关注我的其它发布渠道</p><div class="social-list"><div class="social-item"><a target="_blank" class="social-link" href="/uploads/wechat-qcode.jpg"><span class="icon"><i class="fab fa-weixin"></i></span> <span class="label">WeChat</span></a></div></div></div><footer class="post-footer"><div class="post-tags"><a href="/tags/单目测距/" rel="tag"><i class="fa fa-tag"></i> 单目测距</a></div><div class="post-nav"><div class="post-nav-item"><a href="/Math/弧度和角度/" rel="prev" title="弧度和角度"><i class="fa fa-chevron-left"></i> 弧度和角度</a></div><div class="post-nav-item"> <a href="/MachineLearning/机器学习/PCA/" rel="next" title="PCA">PCA<i class="fa fa-chevron-right"></i></a></div></div></footer></article></div><div class="comments" id="gitalk-container"></div><script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script></div><div class="toggle sidebar-toggle"><span class="toggle-line toggle-line-first"></span><span class="toggle-line toggle-line-middle"></span><span class="toggle-line toggle-line-last"></span></div><aside class="sidebar"><div class="sidebar-inner"><ul class="sidebar-nav motion-element"><li class="sidebar-nav-toc"> 文章目录</li><li class="sidebar-nav-overview"> 站点概览</li></ul><div class="post-toc-wrap sidebar-panel"><div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#定位测量插值得到每个像素的实际坐标"><span class="nav-number">1.</span> <span class="nav-text">定位测量插值得到每个像素的实际坐标　　</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#根据相似三角比例计算出对应像素点的实际坐标"><span class="nav-number">2.</span> <span class="nav-text">根据相似三角比例计算出对应像素点的实际坐标　　</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#模型一：假设测量的点都在Y轴上，此时无X轴分量"><span class="nav-number">2.1.</span> <span class="nav-text">模型一：假设测量的点都在Y轴上，此时无X轴分量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#模型二：假设测量的点有X轴、Y轴分量"><span class="nav-number">2.2.</span> <span class="nav-text">模型二：假设测量的点有X轴、Y轴分量　　</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#模型三：假设测量的点有X轴、Y轴分量，且物体有高度h"><span class="nav-number">2.3.</span> <span class="nav-text">模型三：假设测量的点有X轴、Y轴分量，且物体有高度h　　　　</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#模型评价"><span class="nav-number">2.4.</span> <span class="nav-text">模型评价　　　　</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div></div><div class="site-overview-wrap sidebar-panel"><div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person"> <img class="site-author-image" itemprop="image" alt="zdaiot" src="/uploads/avatar.png"><p class="site-author-name" itemprop="name">zdaiot</p><div class="site-description" itemprop="description">404NotFound</div></div><div class="site-state-wrap motion-element"><nav class="site-state"><div class="site-state-item site-state-posts"> <a href="/archives/"><span class="site-state-item-count">305</span> <span class="site-state-item-name">日志</span></a></div><div class="site-state-item site-state-categories"> <a href="/categories/"><span class="site-state-item-count">52</span> <span class="site-state-item-name">分类</span></a></div><div class="site-state-item site-state-tags"> <a href="/tags/"><span class="site-state-item-count">364</span> <span class="site-state-item-name">标签</span></a></div></nav></div><div class="links-of-author motion-element"><span class="links-of-author-item"><a href="https://github.com/zdaiot" title="GitHub → https://github.com/zdaiot" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i> GitHub</a></span><span class="links-of-author-item"><a href="mailto:zdaiot@163.com" title="E-Mail → mailto:zdaiot@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i> E-Mail</a></span><span class="links-of-author-item"><a href="https://www.zhihu.com/people/" title="知乎 → https://www.zhihu.com/people/" rel="noopener" target="_blank"><i class="fa fa-book fa-fw"></i> 知乎</a></span><span class="links-of-author-item"><a href="https://blog.csdn.net/zdaiot" title="CSDN → https://blog.csdn.net/zdaiot" rel="noopener" target="_blank"><i class="fa fa-copyright fa-fw"></i> CSDN</a></span></div></div><div class="back-to-top motion-element"><i class="fa fa-arrow-up"></i> <span>0%</span></div></div></aside><div id="sidebar-dimmer"></div></div></main><footer class="footer"><div class="footer-inner"><div class="beian"><a href="https://beian.miit.gov.cn" rel="noopener" target="_blank">陕ICP备19018820号</a></div><div class="copyright"> &copy; <span itemprop="copyrightYear">2021</span><span class="with-love"><i class="fa fa-heart"></i></span> <span class="author" itemprop="copyrightHolder">zdaiot</span> <span class="post-meta-divider">|</span><span class="post-meta-item-icon"><i class="fa fa-chart-area"></i></span> <span title="站点总字数">2m</span> <span class="post-meta-divider">|</span><span class="post-meta-item-icon"><i class="fa fa-coffee"></i></span> <span title="站点阅读时长">30:05</span></div><div class="addthis_inline_share_toolbox"><script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5b5e7e498f94b7ad" async="async"></script></div> <span id="timeDate">载入天数...</span><span id="times">载入时分秒...</span><script>var now=new Date;function createtime(){var n=new Date("08/01/2018 00:00:00");now.setTime(now.getTime()+250),days=(now-n)/1e3/60/60/24,dnum=Math.floor(days),hours=(now-n)/1e3/60/60-24*dnum,hnum=Math.floor(hours),1==String(hnum).length&&(hnum="0"+hnum),minutes=(now-n)/1e3/60-1440*dnum-60*hnum,mnum=Math.floor(minutes),1==String(mnum).length&&(mnum="0"+mnum),seconds=(now-n)/1e3-86400*dnum-3600*hnum-60*mnum,snum=Math.round(seconds),1==String(snum).length&&(snum="0"+snum),document.getElementById("timeDate").innerHTML="Run for "+dnum+" Days ",document.getElementById("times").innerHTML=hnum+" Hours "+mnum+" m "+snum+" s"}setInterval("createtime()",250)</script><div class="busuanzi-count"><script data-pjax async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><span class="post-meta-item" id="busuanzi_container_site_uv" style="display:none"><span class="post-meta-item-icon"><i class="user"></i></span><span class="site-uv" title="总访客量"><span id="busuanzi_value_site_uv"></span></span></span> <span class="post-meta-divider">|</span><span class="post-meta-item" id="busuanzi_container_site_pv" style="display:none"><span class="post-meta-item-icon"><i class="eye"></i></span><span class="site-pv" title="总访问量"><span id="busuanzi_value_site_pv"></span></span></span></div></div></footer></div><script src="/lib/anime.min.js"></script><script src="//cdn.jsdelivr.net/gh/theme-next/theme-next-pjax@0/pjax.min.js"></script><script src="/lib/velocity/velocity.min.js"></script><script src="/lib/velocity/velocity.ui.min.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/pisces.js"></script><script src="/js/next-boot.js"></script><script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script><script data-pjax>!function(){var o,n,e=document.getElementsByTagName("link");if(0<e.length)for(i=0;i<e.length;i++)"canonical"==e[i].rel.toLowerCase()&&e[i].href&&(o=e[i].href);n=o?o.split(":")[0]:window.location.protocol.split(":")[0],o||(o=window.location.href),function(){var e=o,i=document.referrer;if(!/([http|https]:\/\/[a-zA-Z0-9\_\.]+\.baidu\.com)/gi.test(e)){var t="https"===String(n).toLowerCase()?"https://sp0.baidu.com/9_Q4simg2RQJ8t7jm9iCKT-xh_/s.gif":"//api.share.baidu.com/s.gif";i?(t+="?r="+encodeURIComponent(document.referrer),e&&(t+="&l="+e)):e&&(t+="?l="+e),(new Image).src=t}}(window)}()</script><script src="/js/local-search.js"></script><div id="pjax"><script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script><link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css"><script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '4800250e682fe873198b',
+      clientSecret: '80f7f33f5f8ddfd3944f455cabadda4ff3299147',
+      repo        : 'zdaiot.github.io',
+      owner       : 'zdaiot',
+      admin       : ['zdaiot'],
+      id          : 'a31dbdb91da7313a7cae154f51a9404a',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({pluginRootPath:"live2dw/",pluginJsPath:"lib/",pluginModelPath:"assets/",tagMode:!1,log:!1,model:{jsonPath:"/live2dw/assets/wanko.model.json"},display:{position:"left",width:150,height:300},mobile:{show:!0}})</script></body></html>
