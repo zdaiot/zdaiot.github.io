@@ -1,1 +1,1 @@
-https://www.zdaiot.com/Mac/brew使用/
+https://www.zdaiot.com/MLFrameworks/Pytorch/Pytorch Tensor形状变换/
