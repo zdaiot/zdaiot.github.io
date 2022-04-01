@@ -1,1 +1,1 @@
-https://www.zdaiot.com/MLFrameworks/Pytorch/Pytorch Tensor形状变换/
+https://www.zdaiot.com/Tools/Computer/数字编码/
