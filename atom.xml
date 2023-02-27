@@ -44,7 +44,7 @@
   </entry>
   
   <entry>
-    <title>决策树（上）—— 决策树（中）—— Random Forest、Adaboost、GBDT</title>
+    <title>决策树（中）—— Random Forest、Adaboost、GBDT</title>
     <link href="https://www.zdaiot.com/MachineLearning/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E5%86%B3%E7%AD%96%E6%A0%91%EF%BC%88%E4%B8%AD%EF%BC%89%E2%80%94%E2%80%94%20Random%20Forest%E3%80%81Adaboost%E3%80%81GBDT/"/>
     <id>https://www.zdaiot.com/MachineLearning/机器学习/决策树（中）—— Random Forest、Adaboost、GBDT/</id>
     <published>2022-10-31T14:14:11.000Z</published>
@@ -341,9 +341,9 @@
       <category term="自然语言处理" scheme="https://www.zdaiot.com/categories/DeepLearningApplications/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86/"/>
     
     
-      <category term="NLP" scheme="https://www.zdaiot.com/tags/NLP/"/>
-    
       <category term="Transformer" scheme="https://www.zdaiot.com/tags/Transformer/"/>
+    
+      <category term="NLP" scheme="https://www.zdaiot.com/tags/NLP/"/>
     
   </entry>
   
@@ -431,9 +431,9 @@
       <category term="自然语言处理" scheme="https://www.zdaiot.com/categories/DeepLearningApplications/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86/"/>
     
     
-      <category term="NLP" scheme="https://www.zdaiot.com/tags/NLP/"/>
-    
       <category term="Transformer" scheme="https://www.zdaiot.com/tags/Transformer/"/>
+    
+      <category term="NLP" scheme="https://www.zdaiot.com/tags/NLP/"/>
     
   </entry>
   
