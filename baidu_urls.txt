@@ -1,1 +1,1 @@
-https://www.zdaiot.com/MachineLearning/机器学习/决策树（下）—— XGBoost、LightGBM/
+https://www.zdaiot.com/Linux/维护/bash属性、startup文件与history/
