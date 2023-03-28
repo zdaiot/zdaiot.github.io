@@ -1,1 +1,1 @@
-https://www.zdaiot.com/Linux/维护/bash属性、startup文件与history/
+https://www.zdaiot.com/Tools/Git/git原理简介/
