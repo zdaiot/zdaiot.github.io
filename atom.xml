@@ -40,7 +40,7 @@
     
       <category term="Tools" scheme="https://www.zdaiot.com/categories/Tools/"/>
     
-      <category term="GIt" scheme="https://www.zdaiot.com/categories/Tools/GIt/"/>
+      <category term="Git" scheme="https://www.zdaiot.com/categories/Tools/Git/"/>
     
     
       <category term="github" scheme="https://www.zdaiot.com/tags/github/"/>
@@ -411,9 +411,9 @@
       <category term="自然语言处理" scheme="https://www.zdaiot.com/categories/DeepLearningApplications/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86/"/>
     
     
-      <category term="Transformer" scheme="https://www.zdaiot.com/tags/Transformer/"/>
-    
       <category term="NLP" scheme="https://www.zdaiot.com/tags/NLP/"/>
+    
+      <category term="Transformer" scheme="https://www.zdaiot.com/tags/Transformer/"/>
     
   </entry>
   
@@ -501,9 +501,9 @@
       <category term="自然语言处理" scheme="https://www.zdaiot.com/categories/DeepLearningApplications/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86/"/>
     
     
-      <category term="Transformer" scheme="https://www.zdaiot.com/tags/Transformer/"/>
-    
       <category term="NLP" scheme="https://www.zdaiot.com/tags/NLP/"/>
+    
+      <category term="Transformer" scheme="https://www.zdaiot.com/tags/Transformer/"/>
     
   </entry>
   
