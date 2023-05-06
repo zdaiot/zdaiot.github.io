@@ -1,1 +1,1 @@
-https://www.zdaiot.com/Tools/Git/git原理简介/
+https://www.zdaiot.com/Linux/博客搭建/剖析 NPM 的包管理机制/
