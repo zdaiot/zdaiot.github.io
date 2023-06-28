@@ -1,1 +1,1 @@
-https://www.zdaiot.com/Linux/博客搭建/剖析 NPM 的包管理机制/
+https://www.zdaiot.com/Linux/博客搭建/Nginx反向代理OpenAI接口/
