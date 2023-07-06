@@ -2,6 +2,27 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://www.zdaiot.com/Python/%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/Python%E5%A4%9A%E8%BF%9B%E7%A8%8B%E3%80%81%E5%A4%9A%E7%BA%BF%E7%A8%8B%E3%80%81%E5%8D%8F%E7%A8%8B/</loc>
+    
+    <lastmod>2023-07-03T15:17:23.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://www.zdaiot.com/Python/%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/%E5%B9%B6%E5%8F%91%E3%80%81%E5%B9%B6%E8%A1%8C%E3%80%81%E7%BA%BF%E7%A8%8B%E3%80%81%E8%BF%9B%E7%A8%8B%E3%80%81%E5%BC%82%E6%AD%A5%E3%80%81%E5%90%8C%E6%AD%A5%E3%80%81%E9%98%BB%E5%A1%9E%E3%80%81%E9%9D%9E%E9%98%BB%E5%A1%9E/</loc>
+    
+    <lastmod>2023-07-03T14:02:23.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://www.zdaiot.com/Python/%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/Python%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/</loc>
+    
+    <lastmod>2023-06-29T03:20:23.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://www.zdaiot.com/Linux/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/Nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86OpenAI%E6%8E%A5%E5%8F%A3/</loc>
     
     <lastmod>2023-06-27T08:13:16.000Z</lastmod>
@@ -492,13 +513,6 @@
   </url>
   
   <url>
-    <loc>https://www.zdaiot.com/Python/%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/Python%E8%BF%9B%E7%A8%8B%E6%B1%A0%EF%BC%9Amultiprocessing.pool/</loc>
-    
-    <lastmod>2020-04-02T12:00:16.000Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://www.zdaiot.com/DeepLearningApplications/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/SSD%E8%AF%A6%E8%A7%A3/</loc>
     
     <lastmod>2020-04-02T10:33:08.000Z</lastmod>
@@ -779,14 +793,14 @@
   </url>
   
   <url>
-    <loc>https://www.zdaiot.com/DataStructureAlgorithm/25%E7%BA%A2%E9%BB%91%E6%A0%91%EF%BC%88%E4%B8%8B%EF%BC%89%EF%BC%9A%E6%8E%8C%E6%8F%A1%E8%BF%99%E4%BA%9B%E6%8A%80%E5%B7%A7%EF%BC%8C%E4%BD%A0%E4%B9%9F%E5%8F%AF%E4%BB%A5%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%BA%A2%E9%BB%91%E6%A0%91/</loc>
+    <loc>https://www.zdaiot.com/DataStructureAlgorithm/24%E7%BA%A2%E9%BB%91%E6%A0%91%EF%BC%88%E4%B8%8A%EF%BC%89%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E5%B7%A5%E7%A8%8B%E4%B8%AD%E9%83%BD%E7%94%A8%E7%BA%A2%E9%BB%91%E6%A0%91%E8%BF%99%E7%A7%8D%E4%BA%8C%E5%8F%89%E6%A0%91/</loc>
     
     <lastmod>2020-02-01T02:59:12.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://www.zdaiot.com/DataStructureAlgorithm/24%E7%BA%A2%E9%BB%91%E6%A0%91%EF%BC%88%E4%B8%8A%EF%BC%89%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E5%B7%A5%E7%A8%8B%E4%B8%AD%E9%83%BD%E7%94%A8%E7%BA%A2%E9%BB%91%E6%A0%91%E8%BF%99%E7%A7%8D%E4%BA%8C%E5%8F%89%E6%A0%91/</loc>
+    <loc>https://www.zdaiot.com/DataStructureAlgorithm/25%E7%BA%A2%E9%BB%91%E6%A0%91%EF%BC%88%E4%B8%8B%EF%BC%89%EF%BC%9A%E6%8E%8C%E6%8F%A1%E8%BF%99%E4%BA%9B%E6%8A%80%E5%B7%A7%EF%BC%8C%E4%BD%A0%E4%B9%9F%E5%8F%AF%E4%BB%A5%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%BA%A2%E9%BB%91%E6%A0%91/</loc>
     
     <lastmod>2020-02-01T02:59:12.000Z</lastmod>
     
@@ -814,6 +828,13 @@
   </url>
   
   <url>
+    <loc>https://www.zdaiot.com/DataStructureAlgorithm/19%E6%95%A3%E5%88%97%E8%A1%A8%EF%BC%88%E4%B8%8B%EF%BC%89%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E6%95%A3%E5%88%97%E8%A1%A8%E5%92%8C%E9%93%BE%E8%A1%A8%E7%BB%8F%E5%B8%B8%E4%BC%9A%E4%B8%80%E8%B5%B7%E4%BD%BF%E7%94%A8/</loc>
+    
+    <lastmod>2020-01-16T13:01:22.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://www.zdaiot.com/DataStructureAlgorithm/18%E6%95%A3%E5%88%97%E8%A1%A8%EF%BC%88%E4%B8%AD%EF%BC%89%EF%BC%9A%E5%A6%82%E4%BD%95%E6%89%93%E9%80%A0%E4%B8%80%E4%B8%AA%E5%B7%A5%E4%B8%9A%E7%BA%A7%E6%B0%B4%E5%B9%B3%E7%9A%84%E6%95%A3%E5%88%97%E8%A1%A8/</loc>
     
     <lastmod>2020-01-16T13:01:22.000Z</lastmod>
@@ -822,13 +843,6 @@
   
   <url>
     <loc>https://www.zdaiot.com/DataStructureAlgorithm/20%E5%93%88%E5%B8%8C%E7%AE%97%E6%B3%95%EF%BC%88%E4%B8%8A%EF%BC%89%EF%BC%9A%E5%A6%82%E4%BD%95%E9%98%B2%E6%AD%A2%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%AD%E7%9A%84%E7%94%A8%E6%88%B7%E4%BF%A1%E6%81%AF%E8%A2%AB%E8%84%B1%E5%BA%93/</loc>
-    
-    <lastmod>2020-01-16T13:01:22.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://www.zdaiot.com/DataStructureAlgorithm/19%E6%95%A3%E5%88%97%E8%A1%A8%EF%BC%88%E4%B8%8B%EF%BC%89%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E6%95%A3%E5%88%97%E8%A1%A8%E5%92%8C%E9%93%BE%E8%A1%A8%E7%BB%8F%E5%B8%B8%E4%BC%9A%E4%B8%80%E8%B5%B7%E4%BD%BF%E7%94%A8/</loc>
     
     <lastmod>2020-01-16T13:01:22.000Z</lastmod>
     
@@ -1885,13 +1899,6 @@
   </url>
   
   <url>
-    <loc>https://www.zdaiot.com/Python/%E5%AE%9E%E6%88%98/guess/</loc>
-    
-    <lastmod>2019-09-15T03:02:18.000Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://www.zdaiot.com/Python/IO%E7%BC%96%E7%A8%8B/Python%E4%B8%ADnumpy%E6%96%87%E4%BB%B6%E5%AD%98%E5%8F%96/</loc>
     
     <lastmod>2019-09-15T02:57:32.000Z</lastmod>
@@ -2165,13 +2172,6 @@
   </url>
   
   <url>
-    <loc>https://www.zdaiot.com/Linux/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/%E7%BD%91%E9%A1%B5%E9%83%A8%E7%BD%B2%E5%88%B0%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%BB%A5%E5%8F%8A%E6%B5%8F%E8%A7%88%E5%99%A8%E9%A2%84%E8%A7%88PDF/</loc>
-    
-    <lastmod>2019-09-12T15:59:55.000Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://www.zdaiot.com/Linux/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/centos7%E6%90%AD%E5%BB%BAwordpress/</loc>
     
     <lastmod>2019-09-12T15:59:55.000Z</lastmod>
@@ -2179,14 +2179,21 @@
   </url>
   
   <url>
-    <loc>https://www.zdaiot.com/Linux/%E8%BD%AF%E4%BB%B6/Centos%E6%90%AD%E5%BB%BAFrp%E5%AE%9E%E7%8E%B0%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/</loc>
+    <loc>https://www.zdaiot.com/Linux/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/%E7%BD%91%E9%A1%B5%E9%83%A8%E7%BD%B2%E5%88%B0%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%BB%A5%E5%8F%8A%E6%B5%8F%E8%A7%88%E5%99%A8%E9%A2%84%E8%A7%88PDF/</loc>
+    
+    <lastmod>2019-09-12T15:59:55.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://www.zdaiot.com/Linux/%E8%BD%AF%E4%BB%B6/Centos%E6%90%AD%E5%BB%BANgrok%E5%AE%9E%E7%8E%B0%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/</loc>
     
     <lastmod>2019-09-12T12:57:09.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://www.zdaiot.com/Linux/%E8%BD%AF%E4%BB%B6/Centos%E6%90%AD%E5%BB%BANgrok%E5%AE%9E%E7%8E%B0%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/</loc>
+    <loc>https://www.zdaiot.com/Linux/%E8%BD%AF%E4%BB%B6/Centos%E6%90%AD%E5%BB%BAFrp%E5%AE%9E%E7%8E%B0%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/</loc>
     
     <lastmod>2019-09-12T12:57:09.000Z</lastmod>
     
@@ -2214,14 +2221,14 @@
   </url>
   
   <url>
-    <loc>https://www.zdaiot.com/DeepLearningApplications/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E7%BB%BC%E8%BF%B0/</loc>
+    <loc>https://www.zdaiot.com/DeepLearningApplications/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E8%AF%84%E4%BB%B7%E6%8C%87%E6%A0%87/</loc>
     
     <lastmod>2019-09-12T11:15:24.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://www.zdaiot.com/DeepLearningApplications/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E8%AF%84%E4%BB%B7%E6%8C%87%E6%A0%87/</loc>
+    <loc>https://www.zdaiot.com/DeepLearningApplications/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2/%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2%E7%AE%97%E6%B3%95%E7%BB%BC%E8%BF%B0/</loc>
     
     <lastmod>2019-09-12T11:15:24.000Z</lastmod>
     
@@ -2238,13 +2245,6 @@
     <loc>https://www.zdaiot.com/MachineLearning/%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E5%89%8D%E5%90%91%E4%B8%8E%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD/</loc>
     
     <lastmod>2019-09-12T11:15:24.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://www.zdaiot.com/Python/%E5%AE%9E%E6%88%98/Mechat/</loc>
-    
-    <lastmod>2019-09-12T09:32:27.000Z</lastmod>
     
   </url>
   

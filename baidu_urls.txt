@@ -1,1 +1,1 @@
-https://www.zdaiot.com/Linux/博客搭建/Nginx反向代理OpenAI接口/
+https://www.zdaiot.com/Python/基础语法/Python多进程、多线程、协程/
